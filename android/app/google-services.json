@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "919312789826",
+    "firebase_url": "https://rank-me-c379a.firebaseio.com",
+    "project_id": "rank-me-c379a",
+    "storage_bucket": "rank-me-c379a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919312789826:android:58a2c053feda38742bd8db",
+        "android_client_info": {
+          "package_name": "com.inoxa.educationapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919312789826-vmo0olslrt0alhu1j98b5qlkpvhnc956.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inoxa.educationapp",
+            "certificate_hash": "727f3443015b12952dee1428f05e92ea218f4137"
+          }
+        },
+        {
+          "client_id": "919312789826-2bbgfsfffpgi7c7uktv7j2e18i771lgs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJjTVLhF0XFDeZkukY6oP8fyf45nW_bSw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919312789826-2bbgfsfffpgi7c7uktv7j2e18i771lgs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
