@@ -2,6 +2,8 @@ import 'package:educationapp/services/authservice.dart';
 import 'package:flutter/material.dart';
 import 'package:educationapp/loginui/login_screen.dart';
 import 'package:educationapp/loginui/components/rounded_button.dart';
+import 'package:http/http.dart' as http;
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
