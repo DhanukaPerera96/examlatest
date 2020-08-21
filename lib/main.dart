@@ -1,3 +1,4 @@
+import 'package:educationapp/homepage.dart';
 import 'package:educationapp/services/authservice.dart';
 import 'package:flutter/material.dart';
 import 'package:educationapp/loginui/login_screen.dart';
@@ -14,9 +15,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
       ),
       home: MySplashPage(),
+//    home: HomePage(),
     );
   }
 }

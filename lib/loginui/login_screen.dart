@@ -36,7 +36,7 @@ class BodyLogin extends StatefulWidget {
 class _BodyLoginState extends State<BodyLogin> {
 
   FocusNode focusNode = FocusNode();
-  String hintText = 'Enter Mobile Number';
+  String hintText = '+94 71567689';
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _BodyLoginState extends State<BodyLogin> {
       if (focusNode.hasFocus) {
         hintText = '';
       } else {
-        hintText = 'Enter Mobile Number';
+        hintText = '+94 715676899';
       }
       setState(() {});
     });
