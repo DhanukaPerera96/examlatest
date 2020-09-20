@@ -174,6 +174,7 @@ class _BodyLoginState extends State<BodyLogin> {
                   borderRadius: BorderRadius.circular(29),
                 ),
                 child: TextField(
+                  maxLength: 9,
                   focusNode: focusNode,
                   controller: _phoneController,
                   onChanged: (value) {
@@ -192,6 +193,7 @@ class _BodyLoginState extends State<BodyLogin> {
                     ),
                     hintText: hintText,
                     border: InputBorder.none,
+                    counterText: ''
                   ),
                 ),
               ),

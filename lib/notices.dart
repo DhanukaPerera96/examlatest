@@ -54,83 +54,89 @@ class _NoticesState extends State<Notices> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: noticeList.length == 0
-          ? Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(child: CircularProgressIndicator()),
-      )
-          :Container(
-        decoration: BoxDecoration(
-          color: Colors.blue[800],
-          image: DecorationImage(
-            image: AssetImage("images/main_top.png"),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: ListView(
-          children: noticeList
-              .map((list) => Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Container(
-            width: size.width * 0.85,
-            child: GestureDetector(
-                child: SizedBox(
-                  height: size.height*0.15,
-                  child: Material(
-
-//                      borderRadius: BorderRadius.circular(24.0),
-                    elevation: 24.0,
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/"+list['image']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.redAccent,
-
-
-                            ),
-
-                            height: double.infinity,
-                            width: size.width*6,
-                          ),
-                        ),
-                        SizedBox(
-                          width: size.width*0.1,
-                        ),
-                        Expanded(
-                          child: Container(
-                            child: new Text(list['title'],style: GoogleFonts.yesevaOne(
-                                fontSize: size.width * 0.05,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black
-                            ),
-                              ),
-                            width: size.height*8,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            Icons.play_arrow,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=> NoticeBody(title: list['title'], image: list['image'], text: list['text'],))),
+    bool _allow = false;
+    return WillPopScope(
+      child: Scaffold(
+        body: noticeList.length == 0
+            ? Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(child: CircularProgressIndicator()),
+        )
+            :Container(
+          decoration: BoxDecoration(
+            color: Colors.blue[800],
+            image: DecorationImage(
+              image: AssetImage("images/main_top.png"),
+              fit: BoxFit.cover,
             ),
           ),
-              )).toList(),
-        )
+          child: ListView(
+            children: noticeList
+                .map((list) => Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+              width: size.width * 0.85,
+              child: GestureDetector(
+                  child: SizedBox(
+                    height: size.height*0.15,
+                    child: Material(
+
+//                      borderRadius: BorderRadius.circular(24.0),
+                      elevation: 24.0,
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage("http://rankme.ml/dashbord/dist/"+list['image']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.redAccent,
+
+
+                              ),
+
+                              height: double.infinity,
+                              width: size.width*6,
+                            ),
+                          ),
+                          SizedBox(
+                            width: size.width*0.1,
+                          ),
+                          Expanded(
+                            child: Container(
+                              child: new Text(list['title'],style: GoogleFonts.yesevaOne(
+                                  fontSize: size.width * 0.05,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black
+                              ),
+                                ),
+                              width: size.height*8,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.play_arrow,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=> NoticeBody(title: list['title'], image: list['image'], text: list['text'],))),
+              ),
+            ),
+                )).toList(),
+          )
+        ),
+        backgroundColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      onWillPop: () {
+        return Future.value(_allow); // if true allow back else block it
+      },
     );
   }
 }

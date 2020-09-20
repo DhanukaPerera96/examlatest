@@ -34,15 +34,16 @@ class _MyResBdyState extends State<MyResBdy> {
     userId = widget.data.userId;
     subjectId = widget.data.subId;
     subjectName = widget.data.subName;
+    districtId = widget.data.district;
 
-    getUserPapers(subjectId, userId);
+    getUserPapers(subjectId, userId, districtId);
 //    getUserDisc();
   }
 
 
 
   //Getting dynamic subjects
-  getUserPapers(subId, uId)async{
+  getUserPapers(subId, uId, disc)async{
     print("GetSUbPapers called");
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
 
@@ -53,19 +54,31 @@ class _MyResBdyState extends State<MyResBdy> {
         body: {
           "subId" : subject,
           "userId" : userId,
+          "district" : disc
         }
     );
 
     if(response.body.toString() != "Error") {
+      print("Hello");
       String jsonDataString = response.body;
-      var data = jsonDecode(jsonDataString);
+      // var data = jsonDecode(jsonDataString);
 
       if (this.mounted) {
+        print("Hello from other side");
         setState(() {
           papersList = json.decode(jsonDataString.toString());
-          print(papersList);
+          if(!response.body.isNotEmpty) {
+            print("hello");
+          }
+          else{
+            print(response.body);
+          }
+
         });
       }
+    }
+    else{
+      print("Error");
     }
   }
 
@@ -103,13 +116,27 @@ class _MyResBdyState extends State<MyResBdy> {
       ),
       body: papersList.length == 0
           ? Container(
-        child: Center(
-          child: Text("No Information Available"),
+        color: Colors.indigo[100],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: Text("No Information Available", style: GoogleFonts.yesevaOne(
+                  fontSize: size.width * 0.06,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black
+              )),
+            ),
+          ],
         ),
-      ):SingleChildScrollView(
-        child: new Container(
-            color: Colors.indigo[100],
-            child:
+      ):Container(
+        color: Colors.indigo[100],
+        height: size.height*1,
+        child: SingleChildScrollView(
+          child: new Container(
+              color: Colors.indigo[100],
+              child:
 //              : ListView(
 //            children: papersList
 //                .map((list) => Container(
@@ -130,88 +157,89 @@ class _MyResBdyState extends State<MyResBdy> {
 //              ),
 //            )).toList(),
 //          )
-         FittedBox(
-          child: DataTable(
-            columnSpacing: 10.0,
-                columns: [
-                  DataColumn(label: Text(
-                      'Paper'
-                      ,style: GoogleFonts.yesevaOne(
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.w600,
-                      color: Colors.black
-                  )
-                  )),
-                  DataColumn(label: Text('Score',style: GoogleFonts.yesevaOne(
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.w600,
-                      color: Colors.black
-                  ))),
-                  DataColumn(label: Text('Time',style: GoogleFonts.yesevaOne(
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.w600,
-                      color: Colors.black
-                  ))),
-                  DataColumn(label: Text('District\n Rank',style: GoogleFonts.yesevaOne(
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.w600,
-                      color: Colors.black
-                  ))),
-                  DataColumn(label: Text('Island\n Rank',style: GoogleFonts.yesevaOne(
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.w600,
-                      color: Colors.black
-                  ))),
-                ],
-                rows:
-                papersList // Loops through dataColumnText, each iteration assigning the value to element
-                    .map(
-                  ((element) => DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text(element["name"],
-                          style: GoogleFonts.yesevaOne(
-                              fontSize: size.width * 0.05,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black
-                          ))), //Extracting from Map element the value
-                      DataCell(Center(
-                        child: Text(element["score"],
-                            style: GoogleFonts.yesevaOne(
-                                fontSize: size.width * 0.06,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black54
-                            )),
-                      )),
-                      DataCell(Center(
-                        child: Text(element["time"],
+           FittedBox(
+            child: DataTable(
+              columnSpacing: 10.0,
+                  columns: [
+                    DataColumn(label: Text(
+                        'Paper'
+                        ,style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    )
+                    )),
+                    DataColumn(label: Text('Score',style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    ))),
+                    DataColumn(label: Text('Time',style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    ))),
+                    DataColumn(label: Text('District\n Rank',style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    ))),
+                    DataColumn(label: Text('Island\n Rank',style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    ))),
+                  ],
+                  rows:
+                  papersList // Loops through dataColumnText, each iteration assigning the value to element
+                      .map(
+                    ((element) => DataRow(
+                      cells: <DataCell>[
+                        DataCell(Text(element["name"],
                             style: GoogleFonts.yesevaOne(
                                 fontSize: size.width * 0.05,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.deepOrange
-                            )),
-                      )),
-                      DataCell(Center(
-                        child: Text(element["time"],
-                            style: GoogleFonts.yesevaOne(
-                                fontSize: size.width * 0.06,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.indigo
-                            )),
-                      )),
-                      DataCell(Center(
-                        child: Text(element["time"],
-                            style: GoogleFonts.yesevaOne(
-                                fontSize: size.width * 0.06,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.indigo
-                            )),
-                      )),
-                    ],
-                  )),
-                )
-                    .toList(),
-              ),
-        ),
+                                color: Colors.black
+                            ))), //Extracting from Map element the value
+                        DataCell(Center(
+                          child: Text(element["score"],
+                              style: GoogleFonts.yesevaOne(
+                                  fontSize: size.width * 0.06,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black54
+                              )),
+                        )),
+                        DataCell(Center(
+                          child: Text(element["time"],
+                              style: GoogleFonts.yesevaOne(
+                                  fontSize: size.width * 0.05,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepOrange
+                              )),
+                        )),
+                        DataCell(Center(
+                          child: Text(element["0"],
+                              style: GoogleFonts.yesevaOne(
+                                  fontSize: size.width * 0.06,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.indigo
+                              )),
+                        )),
+                        DataCell(Center(
+                          child: Text(element["0"],
+                              style: GoogleFonts.yesevaOne(
+                                  fontSize: size.width * 0.06,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.indigo
+                              )),
+                        )),
+                      ],
+                    )),
+                  )
+                      .toList(),
+                ),
+          ),
+          ),
         ),
       ),
     );

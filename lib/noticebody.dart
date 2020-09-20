@@ -94,7 +94,7 @@ class _NoticeBodyState extends State<NoticeBody> {
                                     ),
                                     image: DecorationImage(
 
-                                      image: NetworkImage("http://rankme.ml/"+widget.image),
+                                      image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.image),
                                       fit: BoxFit.fill,
 
                                     ),

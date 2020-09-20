@@ -1,6 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show TargetPlatform;
 import 'package:educationapp/aboutus.dart';
 import 'package:educationapp/bestres.dart';
 import 'package:educationapp/contactus.dart';
+import 'package:educationapp/loginui/login_screen.dart';
+import 'package:educationapp/main.dart';
 import 'package:educationapp/mcqpaper.dart';
 import 'package:educationapp/myres.dart';
 import 'package:educationapp/notices.dart';
@@ -10,6 +14,7 @@ import 'package:educationapp/settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -31,7 +36,7 @@ class _HomePageState extends State<HomePage> {
   String district;
   String image;
   String address;
-  String scl;
+  String scl, id;
 
   onPageChanged(int pageIndex) {
     setState(() {
@@ -90,7 +95,7 @@ class _HomePageState extends State<HomePage> {
           image = userData[0]['img'];
           address = userData[0]['address'];
           scl = userData[0]['school'];
-
+          id = userData[0]['id'];
           print(userData);
         });
       }
@@ -108,7 +113,9 @@ class _HomePageState extends State<HomePage> {
         body: PageView(
           children: <Widget>[
             BestRes(),
-            MyRes(),
+            MyRes(
+              disc : district,
+            ),
             McqPaper(),
             Questions(),
             Notices(),
@@ -127,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(Icons.format_list_bulleted),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.card_giftcard),
+                icon: Icon(Icons.add_to_queue),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.category),
@@ -178,20 +185,22 @@ class _HomePageState extends State<HomePage> {
                         lastName: lName,
                         skl: scl,
                         address: address,
+                        id: id,
+                        img: image,
                       )
                   ));
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text("Settings"),
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => Settings(
-                      )
-                  ));
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.settings),
+              //   title: Text("Settings"),
+              //   onTap: (){
+              //     Navigator.push(context, MaterialPageRoute(
+              //         builder: (context) => Settings(
+              //         )
+              //     ));
+              //   },
+              // ),
               ListTile(
                 leading: Icon(Icons.share),
                 title: Text("Share App"),
@@ -219,6 +228,25 @@ class _HomePageState extends State<HomePage> {
               ListTile(
                 leading: Icon(Icons.exit_to_app),
                 title: Text("Logout"),
+                onTap: () async{
+
+                  //Navigator.popUntil(context, ModalRoute.withName('/'));
+                  await FirebaseAuth.instance.signOut();
+                  // Navigator.pop(context,true);// It worked for me instead of above line
+                  // if(Theme.of(context).platform == TargetPlatform.android)
+                  // {
+                  //   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                  // }
+                  // else if(Theme.of(context).platform == TargetPlatform.iOS)
+                  // {
+                  //   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                  // }
+
+                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                      MySplashPage()), (Route<dynamic> route) => false);
+
+                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MySplashPage()),);
+                },
               ),
             ],
           ),

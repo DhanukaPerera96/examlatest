@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -66,8 +67,19 @@ class _BestRestDrankState extends State<BestRestDrank> {
           color: Colors.indigo[100],
           child: dRankList.isEmpty
               ? Container(
-            child: Center(
-              child: Text("No Information Available"),
+            color: Colors.indigo[100],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: Text("No Information Available", style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.06,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black
+                  )),
+                ),
+              ],
             ),
           )
               :ListView(
@@ -76,9 +88,17 @@ class _BestRestDrankState extends State<BestRestDrank> {
               width: size.width * 0.85,
               child: Card(
                 child: ListTile(
-                  title: Text(list['fname']+" "+list['lname']),
+                  title: Text(list['fname']+" "+list['lname'], style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.05,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black
+                  )),
                   subtitle: Text("Time "+ list['time']),
-                  trailing: Text("Marks "+list['score']),
+                  trailing: Text("Marks "+list['score'], style: GoogleFonts.yesevaOne(
+                      fontSize: size.width * 0.04,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black
+                  )),
                 ),
               ),
             )).toList(),

@@ -1,3 +1,4 @@
+import 'package:educationapp/homepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -6,13 +7,17 @@ import 'package:image_picker/image_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:io';
 
+import 'package:rflutter_alert/rflutter_alert.dart';
+
 class Profile extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String address;
   final String skl;
+  final String id;
+  final String img;
 
-  Profile({this.firstName, this.lastName, this.address, this.skl});
+  Profile({this.firstName, this.lastName, this.address, this.skl, this.id, this.img});
 
   @override
   _ProfileState createState() => _ProfileState();
@@ -26,14 +31,92 @@ class _ProfileState extends State<Profile> {
   TextEditingController addressController = TextEditingController();
   TextEditingController schoolController = TextEditingController();
 
+  static final String uploadEndPoint =
+      'http://rankme.ml/uploads/prof/uploadimg.php';
+  Future<File> file;
+  String status = '';
+  String base64Image;
+  File tmpFile;
+  String errMessage = 'Error Uploading Image';
+  String img;
+  String uImage;
+
   Future getImage() async{
     print("Hello");
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     setState(() {
       _image = File(pickedFile.path);
+       img = _image.toString();
       print(_image);
     });
+    upload();
   }
+
+  // upload(String fileName) {
+  //   http.post(uploadEndPoint, body: {
+  //     "image": base64Image,
+  //     "name": fileName,
+  //     "user" : widget.id,
+  //   }).then((result) {
+  //     // ignore: invalid_use_of_protected_member
+  //     // (context as Element).reassemble();
+  //     setState(() {});
+  //   }).catchError((error) {
+  //     // setStatus(error);
+  //     setState(() {});
+  //   });
+  // }
+
+  Future upload() async{
+    final uri = Uri.parse("http://rankme.ml/uploadimg.php");
+    var request = http.MultipartRequest('POST',uri);
+    request.fields['name'] = widget.id;
+    var pic = await http.MultipartFile.fromPath("image", _image.path);
+    request.files.add(pic);
+    var response = await request.send();
+    String regResponse = response.statusCode.toString();
+    print(regResponse);
+
+    // if(regResponse == "Success"){
+    if(response.statusCode == 200){
+      // setState(() {});
+      // ignore: invalid_use_of_protected_member
+      Alert(
+        context: context,
+        type: AlertType.success,
+        title: "Updated",
+        desc: "Profile Picture Successfully",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Ok",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => HomePage(
+                  )
+              ));
+            },
+            width: 120,
+          )
+        ],
+      ).show();
+      // ignore: invalid_use_of_protected_member
+      // (context as Element).reassemble();
+      // setState(() {});
+      // setState(() {
+      //   uImage = _image.path;
+      // });
+
+    }
+    else{
+      // setState(() {});
+      // ignore: invalid_use_of_protected_member
+      (context as Element).reassemble();
+    }
+  }
+
 
   @override
   void initState() {
@@ -43,6 +126,67 @@ class _ProfileState extends State<Profile> {
     lNameController.text = widget.lastName;
     addressController.text = widget.address;
     schoolController.text = widget.skl;
+    uImage = widget.img;
+  }
+
+  updateProfData () async{
+    print(fNameController.text);
+    print(lNameController.text);
+    print(addressController.text);
+    print(schoolController.text);
+    print(widget.id);
+
+
+    var url = 'http://rankme.ml/updateProf.php';
+    final response = await http.post(Uri.encodeFull(url),headers: {"Accept":"application/json"},
+        body: {
+          "id" : widget.id,
+          "fname" : fNameController.text,
+          "lname" : lNameController.text,
+          "address" : addressController.text,
+          "skl" : schoolController.text,
+        }
+    );
+    String regResponse = response.body.toString();
+    print(regResponse);
+
+    if(regResponse == "Success"){
+      Alert(
+        context: context,
+        type: AlertType.success,
+        title: "Updated",
+        desc: "Profile Updated Successfully",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Ok",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () => Navigator.pop(context),
+            width: 120,
+          )
+        ],
+      ).show();
+    }
+    else{
+      //print("Cannot Submit");
+      Alert(
+        context: context,
+        type: AlertType.error,
+        title: "Update Failed",
+        desc: "Please Try Again.",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Ok",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () => Navigator.pop(context),
+            width: 120,
+          )
+        ],
+      ).show();
+    }
 
   }
 
@@ -73,7 +217,7 @@ class _ProfileState extends State<Profile> {
                           backgroundColor: Color(0xffFDCF09),
                           child: CircleAvatar(
                             radius: 50,
-                            backgroundImage: NetworkImage("https://firebasestorage.googleapis.com/v0/b/calenderapp-ec93d.appspot.com/o/events.jpg?alt=media&token=c1cb0edf-bbbf-48ae-ab54-79b7eb6525ab"),
+                            backgroundImage: widget.img == null ? NetworkImage("http://rankme.ml/uploads/prof/avatar.png"): NetworkImage("http://rankme.ml/uploads/prof/$uImage"),
                           ),
                         ),
 
@@ -168,7 +312,7 @@ class _ProfileState extends State<Profile> {
                                 fontFamily: "WorkSansBold"),
                           ),
                         ),
-//                        onPressed: updateProfData,
+                       onPressed: updateProfData,
                       ),
                     ),
 

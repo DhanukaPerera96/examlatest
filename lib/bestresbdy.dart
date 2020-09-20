@@ -3,6 +3,7 @@ import 'package:educationapp/bestresirank.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:educationapp/data.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -123,8 +124,19 @@ class _BestResBodyState extends State<BestResBody> {
                 color: Colors.indigo[100],
                 child: papersList.length == 0
                     ? Container(
-                  child: Center(
-                    child: Text("No Information Available"),
+                  color: Colors.indigo[100],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Text("No Information Available", style: GoogleFonts.yesevaOne(
+                            fontSize: size.width * 0.06,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black
+                        )),
+                      ),
+                    ],
                   ),
                 )
                     : ListView(
