@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MySplashPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;

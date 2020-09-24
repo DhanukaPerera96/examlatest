@@ -145,10 +145,12 @@ class _FinalResState extends State<FinalRes> {
                                 print(regResponse);
 
                                 if(regResponse == "Success"){
-                                  Navigator.push(context, MaterialPageRoute(
-                                      builder: (context) => HomePage(
-                                      )
-                                  ));
+                                  // Navigator.push(context, MaterialPageRoute(
+                                  //     builder: (context) => HomePage(
+                                  //     )
+                                  // ));
+                                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                                      HomePage()), (Route<dynamic> route) => false);
                                 }
                                 else{
                                   //print("Cannot Submit");

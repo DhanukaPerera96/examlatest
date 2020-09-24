@@ -453,13 +453,44 @@ class _McqBodyState extends State<McqBody> {
 
           title: Text("Quiz Starting"),
         ),
-        body: mcqQuestions.length == 0? Container(
-          child: Center(
-            child: JumpingDotsProgressIndicator(
-              fontSize: size.height*0.1,
-            ),
+        body: mcqQuestions.length == 0?
+
+        Container(
+          color: Colors.indigo[100],
+          height: size.height*1,
+          child: Column(
+
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                child: Center(
+                  child: JumpingDotsProgressIndicator(
+                    fontSize: size.height*0.1,
+                  ),
+                ),
+              ),
+              Container(
+                color: Colors.indigo[100],
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Text("No Information Available", style: GoogleFonts.yesevaOne(
+                          fontSize: size.width * 0.06,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black
+                      )),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
-        ): SingleChildScrollView(
+        )
+
+            : SingleChildScrollView(
           child: Column(
             children: [
               Padding(

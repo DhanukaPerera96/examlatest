@@ -1,6 +1,7 @@
 import 'package:educationapp/ansbody.dart';
 import 'package:educationapp/mcqbody.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -187,12 +188,43 @@ class _SubMcqState extends State<SubMcq> {
       child: Scaffold(
         backgroundColor: Colors.indigo,
         body: mcqDetails.length == 0
-            ? Container(
-          child: Center(
-            child: JumpingDotsProgressIndicator(
-              fontSize: size.height*0.1,
+            ?
+        // Container(
+        //   child: Center(
+        //     child: JumpingDotsProgressIndicator(
+        //       fontSize: size.height*0.1,
+        //     ),
+        //   ),
+        // )
+        Column(
+
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              child: Center(
+                child: JumpingDotsProgressIndicator(
+                  fontSize: size.height*0.1,
+                ),
+              ),
             ),
-          ),
+            Container(
+              color: Colors.indigo[100],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Text("No Information Available", style: GoogleFonts.yesevaOne(
+                        fontSize: size.width * 0.06,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black
+                    )),
+                  ),
+                ],
+              ),
+            )
+          ],
         )
             :Padding(
               padding: const EdgeInsets.all(40.0),

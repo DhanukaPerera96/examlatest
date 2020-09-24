@@ -50,6 +50,19 @@ class _BodyLoginState extends State<BodyLogin> {
       }
       setState(() {});
     });
+    autoLog();
+
+  }
+
+  autoLog() async{
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    final FirebaseUser user = await _auth.currentUser();
+
+    if(user != null ){
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => MaintainRoute()
+      ));
+    }
   }
 
   String mobileNo;
