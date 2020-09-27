@@ -6,8 +6,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_countdown_timer/countdown_timer.dart';
+import 'package:page_view_indicators/step_page_indicator.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:page_view_indicators/circle_page_indicator.dart';
 
 class McqBody extends StatefulWidget {
 
@@ -22,6 +24,21 @@ class McqBody extends StatefulWidget {
 }
 
 class _McqBodyState extends State<McqBody> {
+
+  final _items = [
+    Colors.blue,
+    Colors.orange,
+    Colors.green,
+    Colors.pink,
+    Colors.red,
+    Colors.amber,
+    Colors.brown,
+    Colors.yellow,
+    Colors.blue,
+  ];
+  final _pageController = PageController();
+  final _currentPageNotifier = ValueNotifier<int>(0);
+  final _boxHeight = 150.0;
 
   String mcqPprId;
   List mcqQuestions = List();
@@ -83,6 +100,9 @@ class _McqBodyState extends State<McqBody> {
     strtEndT = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
     pageNo = 0;
     getUserData();
+    setState(() {
+      _currentPageNotifier.value = 0;
+    });
   }
 
 
@@ -163,7 +183,7 @@ class _McqBodyState extends State<McqBody> {
   List<Widget> _buildPageIndicator() {
     List<Widget> list = [];
     for (int i = 0; i < mcqQuestions.length; i++) {
-      list.add(i ==  selectedindex? _indicator(true) : _indicator(false));
+      list.add(i ==  0? _indicator(true) : _indicator(false));
     }
     return list;
   }
@@ -440,6 +460,38 @@ class _McqBodyState extends State<McqBody> {
 
   }
 
+  _buildCircleIndicator5() {
+    return CirclePageIndicator(
+      size: 8.0,
+      selectedSize: 16.0,
+      dotColor: Colors.black,
+      selectedDotColor: Colors.blue,
+      itemCount: mcqQuestions.length,
+      currentPageNotifier: _currentPageNotifier,
+    );
+  }
+  _buildStepIndicator() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+
+          color: Colors.white70,
+          padding: const EdgeInsets.all(16.0),
+          child: StepPageIndicator(
+            itemCount: mcqQuestions.length,
+            currentPageNotifier: _currentPageNotifier,
+            size: 18,
+            onPageSelected: (int index) {
+              if (_currentPageNotifier.value > index)
+                _pageController.jumpToPage(index);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
 
 
   @override
@@ -534,75 +586,36 @@ class _McqBodyState extends State<McqBody> {
                     color: Colors.white,
                     child: Column(
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                          child: Row(
-                            children: [
-
-                              Expanded(
-                                child: MaterialButton(
-                                  elevation: 2,
-                                  child: Text('Pause and Exit',
-                                    style: TextStyle(
-                                        color: Colors.white
-                                    ),),
-                                  onPressed: null,
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                              SizedBox(
-                                width: size.width * 0.2,
-                              ),
-                              Expanded(
-                                child: pageNo < mcqQuestions.length-1 ?  MaterialButton(
-                                  elevation: 2,
-                                  child: Text('Finish'),
-                                  onPressed: (){
-                                    validateAnsFinal(selectedFinal);
-
-                                  },
-                                  color: Colors.indigoAccent,
-                                ):
-                                MaterialButton(
-                                  elevation: 2,
-                                  child: Text('Finish'),
-                                  onPressed: (){
-                                    validateAnsFinal(selectedFinal);
-                                    // Navigator.push(context, MaterialPageRoute(
-                                    //     builder: (context) => McqBody(
-                                    //
-                                    //     )
-                                    // ));
-                                  },
-                                  color: Colors.indigoAccent,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Container(
-                          color: Colors.grey,
-                          child: Card(
-
-                            child: ListTile(
-                              leading: Icon(Icons.library_books),
-                              title: Text(mcqQuestions[0]['text']),
-                              subtitle: mcqQuestions[0]['image'] != null ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Container(
-                                  decoration: new BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['image']),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    color: Colors.redAccent,
+                        // Padding(
+                        //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                        //   child: Row(
+                        //     children: [
+                        //
+                        //
+                        //     ],
+                        //   ),
+                        // ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(mcqQuestions[0]['text']),
+                            mcqQuestions[0]['image'] != null ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                decoration: new BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['image']),
+                                    fit: BoxFit.cover,
                                   ),
-                                  height: size.height*0.2,
-                                  width: size.width*0.1,
+                                  color: Colors.transparent,
                                 ),
-                              ): Container(width: 0, height: 0),
-                            ),
-                          ),
+                                height: size.height*0.2,
+                                width: size.width*0.1,
+                              ),
+                            ): Container(width: 0, height: 0),
+                          ],
+
                         ),
 
                         Expanded(
@@ -636,16 +649,25 @@ class _McqBodyState extends State<McqBody> {
                                     },
                                     subtitle: mcqQuestions[0]['ans_one_img'] != null ? Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: new BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_one_img']),
-                                            fit: BoxFit.cover,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          decoration: new BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_one_img']),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            color: Colors.transparent,
                                           ),
-                                          color: Colors.redAccent,
+                                          height: size.height*0.09,
+                                          width: size.width*0.1,
                                         ),
-                                        height: size.height*0.2,
-                                        width: size.width*0.1,
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                            return DetailScreen(
+                                              img: mcqQuestions[0]['ans_one_img'],
+                                            );
+                                          }));
+                                        },
                                       ),
                                     ): Container(width: 0, height: 0)
                                 ),
@@ -678,16 +700,25 @@ class _McqBodyState extends State<McqBody> {
                                     },
                                     subtitle: mcqQuestions[0]['ans_two_img'] != null ? Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: new BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_two_img']),
-                                            fit: BoxFit.cover,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          decoration: new BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_two_img']),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            color: Colors.transparent,
                                           ),
-                                          color: Colors.redAccent,
+                                          height: size.height*0.09,
+                                          width: size.width*0.1,
                                         ),
-                                        height: size.height*0.2,
-                                        width: size.width*0.1,
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                            return DetailScreen(
+                                              img: mcqQuestions[0]['ans_two_img'],
+                                            );
+                                          }));
+                                        },
                                       ),
                                     ): Container(width: 0, height: 0)
                                 ),
@@ -719,16 +750,25 @@ class _McqBodyState extends State<McqBody> {
                                     },
                                     subtitle: mcqQuestions[0]['ans_three_img'] != null ? Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: new BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_three_img']),
-                                            fit: BoxFit.cover,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          decoration: new BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_three_img']),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            color: Colors.transparent,
                                           ),
-                                          color: Colors.redAccent,
+                                          height: size.height*0.09,
+                                          width: size.width*0.1,
                                         ),
-                                        height: size.height*0.2,
-                                        width: size.width*0.1,
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                            return DetailScreen(
+                                              img: mcqQuestions[0]['ans_three_img'],
+                                            );
+                                          }));
+                                        },
                                       ),
                                     ): Container(width: 0, height: 0)
                                 ),
@@ -760,16 +800,25 @@ class _McqBodyState extends State<McqBody> {
                                     },
                                     subtitle: mcqQuestions[0]['ans_four_img'] != null ? Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: new BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_four_img']),
-                                            fit: BoxFit.cover,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          decoration: new BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_four_img']),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            color: Colors.transparent,
                                           ),
-                                          color: Colors.redAccent,
+                                          height: size.height*0.09,
+                                          width: size.width*0.1,
                                         ),
-                                        height: size.height*0.2,
-                                        width: size.width*0.1,
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                            return DetailScreen(
+                                              img: mcqQuestions[0]['ans_four_img'],
+                                            );
+                                          }));
+                                        },
                                       ),
                                     ): Container(width: 0, height: 0)
                                 ),
@@ -801,16 +850,25 @@ class _McqBodyState extends State<McqBody> {
                                     },
                                     subtitle: mcqQuestions[0]['ans_five_img'] != null ? Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: new BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_five_img']),
-                                            fit: BoxFit.cover,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          decoration: new BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+mcqQuestions[0]['ans_five_img']),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            color: Colors.transparent,
                                           ),
-                                          color: Colors.redAccent,
+                                          height: size.height*0.09,
+                                          width: size.width*0.1,
                                         ),
-                                        height: size.height*0.2,
-                                        width: size.width*0.1,
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                            return DetailScreen(
+                                              img: mcqQuestions[0]['ans_five_img'],
+                                            );
+                                          }));
+                                        },
                                       ),
                                     ): Container(width: 0, height: 0)
                                 ): SizedBox(
@@ -824,24 +882,51 @@ class _McqBodyState extends State<McqBody> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                          padding: const EdgeInsets.all(4.0),
                           child: Row(
                             children: [
+                              Expanded(
+                                child: MaterialButton(
+                                  elevation: 2,
+                                  child: Text('Pause and Exit',
+                                    style: TextStyle(
+                                        color: Colors.white
+                                    ),),
+                                  onPressed: null,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                              SizedBox(
+                                width: size.width * 0.01,
+                              ),
+                              Expanded(
+                                child: pageNo < mcqQuestions.length-1 ?  MaterialButton(
+                                  elevation: 2,
+                                  child: Text('Finish'),
+                                  onPressed: (){
+                                    validateAnsFinal(selectedFinal);
 
-                              // Expanded(
-                              //   child: MaterialButton(
-                              //     elevation: 2,
-                              //     child: Text('Back',
-                              //       style: TextStyle(
-                              //           color: Colors.white
-                              //       ),),
-                              //     onPressed: (){},
-                              //     color: Colors.redAccent,
-                              //   ),
-                              // ),
-                              // SizedBox(
-                              //   width: size.width * 0.2,
-                              // ),
+                                  },
+                                  color: Colors.indigoAccent,
+                                ):
+                                MaterialButton(
+                                  elevation: 2,
+                                  child: Text('Finish'),
+                                  onPressed: (){
+                                    validateAnsFinal(selectedFinal);
+                                    // Navigator.push(context, MaterialPageRoute(
+                                    //     builder: (context) => McqBody(
+                                    //
+                                    //     )
+                                    // ));
+                                  },
+                                  color: Colors.indigoAccent,
+                                ),
+                              ),
+                              SizedBox(
+                                width: size.width * 0.01,
+                              ),
+
                               Expanded(
 
                                 child:
@@ -858,7 +943,40 @@ class _McqBodyState extends State<McqBody> {
 
                             ],
                           ),
-                        )
+                        ),
+                        // _buildCircleIndicator5()
+                        Container(
+                          child: Row(
+                            children: [
+                              Expanded(child: Container(
+                                width: size.width*0.1,
+                              )),
+                              FloatingActionButton(
+                                backgroundColor: Colors.indigo[400],
+                                onPressed: (){
+                                  _settingModalBottomSheet(context);
+                                },
+                                child: new Icon(Icons.arrow_drop_up),
+                                shape: RoundedRectangleBorder(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Expanded(
+                        //   child: ListView(
+                        //     children: <Widget>[
+                        //
+                        //
+                        //
+                        //     ]
+                        //         .map((item) => Padding(
+                        //       child: item,
+                        //       padding: EdgeInsets.all(1.0),
+                        //     ))
+                        //         .toList(),
+                        //   ),
+                        // ),
+
 
 
                       ],
@@ -876,5 +994,53 @@ class _McqBodyState extends State<McqBody> {
       },
     );
   }
+  void _settingModalBottomSheet(context){
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc){
+          return Container(
+            child: new Wrap(
+              children: <Widget>[
+                _buildStepIndicator(),
+                // new ListTile(
+                //     leading: new Icon(Icons.music_note),
+                //     title: new Text('Music'),
+                //     onTap: () => {}
+                // ),
+                // new ListTile(
+                //   leading: new Icon(Icons.videocam),
+                //   title: new Text('Video'),
+                //   onTap: () => {},
+                // ),
+              ],
+            ),
+          );
+        }
+    );
+  }
 }
 
+class DetailScreen extends StatelessWidget {
+  final String img;
+
+  DetailScreen({this.img});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        child: Center(
+          child: Hero(
+            tag: 'imageHero',
+            child: Image.network(
+
+              "http://rankme.ml/dashbord/dist/"+img,
+            ),
+          ),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+}
