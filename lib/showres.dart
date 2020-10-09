@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ShowRes extends StatefulWidget {
 
@@ -40,10 +41,10 @@ class _ShowResState extends State<ShowRes> {
                   child: Container(
                     decoration: new BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['image']),
+                        image: NetworkImage("http://rankme.ml/dashboard/dist/"+widget.showResList[widget.qNo]['image']),
                         fit: BoxFit.cover,
                       ),
-                      color: Colors.redAccent,
+                      color: Colors.transparent,
                     ),
                     height: size.height*0.2,
                     width: size.width*0.1,
@@ -55,8 +56,20 @@ class _ShowResState extends State<ShowRes> {
           SizedBox(height: 1.0,),
           Column(
             children: [
-              Text("Correct Answer: "+ widget.showResList[widget.qNo]['answer']),
-              widget.userSel != null ? Text("You Selected" + widget.userSel.toString()) : Text("You Selected None" ),
+              Text("Correct Answer: "+ widget.showResList[widget.qNo]['answer'], style: GoogleFonts.yesevaOne(
+                  fontSize: size.width * 0.04,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black
+              )),
+              widget.userSel != null ? Text("You Selected" + widget.userSel.toString(), style: GoogleFonts.yesevaOne(
+                  fontSize: size.width * 0.04,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black
+              )) : Text("You Selected None", style: GoogleFonts.yesevaOne(
+                  fontSize: size.width * 0.04,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black
+              ) ),
             ],
           ),
           Expanded(
@@ -73,10 +86,10 @@ class _ShowResState extends State<ShowRes> {
                         child: Container(
                           decoration: new BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['image']),
+                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.showResList[widget.qNo]['ans_one_img']),
                               fit: BoxFit.cover,
                             ),
-                            color: Colors.redAccent,
+                            color: Colors.transparent,
                           ),
                           height: size.height*0.2,
                           width: size.width*0.1,
@@ -95,10 +108,10 @@ class _ShowResState extends State<ShowRes> {
                         child: Container(
                           decoration: new BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['ans_two_img']),
+                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.showResList[widget.qNo]['ans_two_img']),
                               fit: BoxFit.cover,
                             ),
-                            color: Colors.redAccent,
+                            color: Colors.transparent,
                           ),
                           height: size.height*0.2,
                           width: size.width*0.1,
@@ -116,10 +129,10 @@ class _ShowResState extends State<ShowRes> {
                         child: Container(
                           decoration: new BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['ans_three_img']),
+                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.showResList[widget.qNo]['ans_three_img']),
                               fit: BoxFit.cover,
                             ),
-                            color: Colors.redAccent,
+                            color: Colors.transparent,
                           ),
                           height: size.height*0.2,
                           width: size.width*0.1,
@@ -137,10 +150,10 @@ class _ShowResState extends State<ShowRes> {
                         child: Container(
                           decoration: new BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['ans_four_img']),
+                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.showResList[widget.qNo]['ans_four_img']),
                               fit: BoxFit.cover,
                             ),
-                            color: Colors.redAccent,
+                            color: Colors.transparent,
                           ),
                           height: size.height*0.2,
                           width: size.width*0.1,
@@ -159,10 +172,10 @@ class _ShowResState extends State<ShowRes> {
                         child: Container(
                           decoration: new BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage("http://rankme.ml/"+widget.showResList[widget.qNo]['ans_five_img']),
+                              image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.showResList[widget.qNo]['ans_five_img']),
                               fit: BoxFit.cover,
                             ),
-                            color: Colors.redAccent,
+                            color: Colors.transparent,
                           ),
                           height: size.height*0.2,
                           width: size.width*0.1,

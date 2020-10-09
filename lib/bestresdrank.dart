@@ -32,7 +32,7 @@ class _BestRestDrankState extends State<BestRestDrank> {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
 
     var url = 'http://rankme.ml/getBestResDRank.php';
-    final response = await http.post(Uri.encodeFull(url),he aders: {"Accept":"application/json"},
+    final response = await http.post(Uri.encodeFull(url),headers: {"Accept":"application/json"},
         body: {
           "paperId" : pId,
           "districtId" : dId,
