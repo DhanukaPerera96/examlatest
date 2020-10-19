@@ -1,11 +1,12 @@
 import 'package:educationapp/ansbody.dart';
 import 'package:educationapp/finalres.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_countdown_timer/countdown_timer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_countdown_timer/countdown_timer.dart';
+
 import 'package:page_view_indicators/step_page_indicator.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -45,6 +46,7 @@ class _McqBodyState extends State<McqBody> {
   List mcqQuestions = List();
   List mcqQueAns = List();
   List userData = List();
+  List mapList;
 
   final Map<String, int> qAndAList = {};
   List list = List();
@@ -107,7 +109,27 @@ class _McqBodyState extends State<McqBody> {
     });
   }
 
+  int current_index =0;
+  // PageController pageController = PageController(viewportFraction: .2,initialPage: 0,keepPage:true );
 
+  _onPageViewChange(int page) {
+
+
+    setState(() {
+
+      current_index=page;
+
+    });
+    print("Current Page: " + page.toString());
+    int previousPage = page;
+
+    if(page != 0) previousPage--;
+
+
+    else previousPage = 2;
+
+    print("Previous page: $previousPage");
+  }
 
   //Getting dynamic subjects
   getMcqQues(mcqPprId)async{
@@ -133,6 +155,8 @@ class _McqBodyState extends State<McqBody> {
 //          print(mcqDetails);
           mcqQuesId = mcqQuestions[0]['id'];
           correctAns = mcqQuestions[0]['answer'];
+          mapList = List(mcqQuestions.length);
+          print(mapList.length.toString());
         });
       }
 
@@ -274,7 +298,7 @@ class _McqBodyState extends State<McqBody> {
     });
     transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
 
-    var restTime =  (endTime - transTime)+3000;
+    var restTime =  (endTime - transTime);
     // print(transTime);
     // print(strtEndT);
     // print(restTime);
@@ -301,7 +325,10 @@ class _McqBodyState extends State<McqBody> {
         qAndAList["$pageNo"] = selAns;
       });
 
-      Navigator.push(context, MaterialPageRoute(
+      mapList[0] = ans;
+      print(mapList);
+
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context) =>
               AnsBody(
                 quesList: mcqQuestions,
@@ -314,13 +341,21 @@ class _McqBodyState extends State<McqBody> {
                 time : restTime,
                 iniTime: strtEndT,
                 setEnd : widget.mcqTime,
+                mapped : mapList,
 
               )
       ));
+      // pageController.animateToPage(
+      //     current_index +1 ,
+      //     duration: const Duration(milliseconds: 400),
+      //     curve: Curves.easeInOut,
+      //   );
     }
     else if(ans == null) {
 
-      Navigator.push(context, MaterialPageRoute(
+      // mapList[0] = 0;
+
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context) =>
               AnsBody(
                 quesList: mcqQuestions,
@@ -333,9 +368,107 @@ class _McqBodyState extends State<McqBody> {
                 time: restTime,
                 iniTime: strtEndT,
                 setEnd : widget.mcqTime,
+                mapped : mapList,
 
               )
       ));
+      // pageController.animateToPage(
+      //       current_index +1 ,
+      //       duration: const Duration(milliseconds: 400),
+      //       curve: Curves.easeInOut,
+      //     );
+    }
+
+
+
+  }
+
+  validateAnsSpec(ans, pg){
+
+    setState(() {
+      isClosed = false;
+    });
+    transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
+
+    var restTime =  (endTime - transTime);
+    // print(transTime);
+    // print(strtEndT);
+    // print(restTime);
+    // print((endTime * 1000* 60) - transTime);
+
+    if(ans != null) {
+      int corAns = int.parse(mcqQuestions[0]['answer']);
+      quesAmt = mcqQuestions.length;
+      assert(corAns is int);
+      int selAns = int.parse(ans);
+      assert(selAns is int);
+      print(ans);
+      print(corAns);
+      if (selAns == corAns) {
+        print("Question " + mcqQuestions[0]['no'] + " Correct");
+        correct = correct + 1;
+      }
+      else {
+        print("Question " + mcqQuestions[0]['no'] + " wrong");
+        wrong = wrong + 1;
+      }
+      setState(() {
+        total = (correct / quesAmt) * 100;
+        qAndAList["$pageNo"] = selAns;
+      });
+
+      mapList[0] = ans;
+      print(mapList);
+
+      Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) =>
+              AnsBody(
+                quesList: mcqQuestions,
+                pageNo: pg,
+                correct: correct,
+                tot: total,
+                ansList: qAndAList,
+                mcqId: mcqPprId,
+                subId : widget.subId,
+                time : restTime,
+                iniTime: strtEndT,
+                setEnd : widget.mcqTime,
+                mapped : mapList,
+
+              )
+      ));
+      // pageController.animateToPage(
+      //   current_index +1 ,
+      //   duration: const Duration(milliseconds: 400),
+      //   curve: Curves.easeInOut,
+      // );
+    }
+    else if(ans == null) {
+
+      // mapList[0] = 0;
+
+      Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) =>
+              AnsBody(
+                quesList: mcqQuestions,
+                pageNo: pg,
+                correct: correct,
+                tot: total,
+                ansList: qAndAList,
+                mcqId: mcqPprId,
+                subId: widget.subId,
+                time: restTime,
+                iniTime: strtEndT,
+                setEnd : widget.mcqTime,
+                mapped : mapList,
+
+              )
+      ));
+      // pageController.animateToPage(
+      //   current_index +1 ,
+      //   duration: const Duration(milliseconds: 400),
+      //   curve: Curves.easeInOut,
+      // );
     }
 
 
@@ -434,6 +567,70 @@ class _McqBodyState extends State<McqBody> {
 
   }
 
+  validateAnsFinalTime(ans){
+
+    setState(() {
+      isClosed = false;
+    });
+
+    transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
+    var restTime =  (endTime - transTime)+3000;
+
+
+    if(ans != null){
+      int corAns = int.parse(mcqQuestions[0]['answer']);
+      quesAmt = mcqQuestions.length;
+      assert(corAns is int);
+      int selAns = int.parse(ans);
+      assert(selAns is int);
+      print(ans);
+      print(corAns);
+      if(selAns == corAns)
+      {
+        print("Question "+ mcqQuestions[0]['no'] +" Correct");
+        correct =  correct + 1;
+      }
+      else{
+        print("Question "+ mcqQuestions[0]['no'] +" wrong");
+        wrong = wrong+1;
+      }
+      qAndAList["$pageNo"] = selAns ;
+
+      total = (correct/quesAmt)*100;
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => FinalRes(
+            tot : total,
+            ansList: qAndAList,
+            realAns : mcqQuestions,
+            mcqId: mcqPprId,
+            subId : widget.subId,
+            time : restTime,
+            iniTime: strtEndT,
+            setEnd : widget.mcqTime,
+          )
+      ));
+
+    }
+    else if(ans == null)
+    {
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => FinalRes(
+            tot : total,
+            ansList: qAndAList,
+            realAns : mcqQuestions,
+            mcqId: mcqPprId,
+            subId : widget.subId,
+            time : restTime,
+            iniTime: strtEndT,
+            setEnd : widget.mcqTime,
+          )
+      ));}
+
+
+
+
+  }
+
   _buildCircleIndicator5() {
     return CirclePageIndicator(
       size: 8.0,
@@ -520,9 +717,9 @@ class _McqBodyState extends State<McqBody> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: isClosed ?  CountdownTimer(
+              child:  CountdownTimer(
                 endTime: endTime,
-                hoursTextStyle:GoogleFonts.yesevaOne(
+               /* hoursTextStyle:GoogleFonts.yesevaOne(
                     fontSize: size.width * 0.05,
                     fontWeight: FontWeight.w600,
                     color: Colors.red
@@ -536,18 +733,20 @@ class _McqBodyState extends State<McqBody> {
                     fontSize: size.width * 0.05,
                     fontWeight: FontWeight.w600,
                     color: Colors.redAccent
-                ),
+                ),*/
 
 
                 onEnd: (){
                   print("Game Over");
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => FinalRes(
-                        tot : total,
-                      )
-                  ));
+                  // validateAnsFinalTime(selectedFinal);
+
+                  // Navigator.push(context, MaterialPageRoute(
+                  //     builder: (context) => FinalRes(
+                  //       tot : total,
+                  //     )
+                  // ));
                 },
-              ) : Container(),
+              ),
             ),
             Container(
               height: size.height*0.8,
@@ -586,7 +785,9 @@ class _McqBodyState extends State<McqBody> {
                               height: size.height*0.2,
                               width: size.width*0.1,
                             ),
-                          ): Container(width: 0, height: 0),
+                          ): SizedBox(
+                            height: 1.0,
+                          ),
                         ],
 
                       ),
@@ -799,7 +1000,7 @@ class _McqBodyState extends State<McqBody> {
                                 thickness: 1,
                                 color: Colors.grey,
                               ),
-                              (mcqQuestions[0]['ans_five'] != null) ? CheckboxListTile(
+                              (!(mcqQuestions[0]['ans_five']).isEmpty) ? CheckboxListTile(
                                   title: Text(mcqQuestions[0]['ans_five']),
                                   value: ansFiveB,
                                   onChanged: (val) {
@@ -854,6 +1055,220 @@ class _McqBodyState extends State<McqBody> {
                           ),
                         ),
                       ),
+
+                      // _buildCircleIndicator5()
+                      // Container(
+                      //   child: Row(
+                      //     children: [
+                      //       Expanded(child: Container(
+                      //         width: size.width*0.1,
+                      //       )),
+                      //       FloatingActionButton(
+                      //         backgroundColor: Colors.indigo[400],
+                      //         onPressed: (){
+                      //           _settingModalBottomSheet(context);
+                      //         },
+                      //         child: new Icon(Icons.arrow_drop_up),
+                      //         shape: RoundedRectangleBorder(),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // Expanded(
+                      //   child: ListView(
+                      //     children: <Widget>[
+                      //
+                      //
+                      //
+                      //     ]
+                      //         .map((item) => Padding(
+                      //       child: item,
+                      //       padding: EdgeInsets.all(1.0),
+                      //     ))
+                      //         .toList(),
+                      //   ),
+                      // ),
+                      // SmoothPageIndicator(
+                      //                       //     controller: _pageController,  // PageController
+                      //                       //     count:  mcqQuestions.length,
+                      //                       //     effect:  WormEffect(),  // your preferred effect
+                      //                       //     onDotClicked: (index){
+                      //                       //
+                      //                       //     }
+                      //                       // )
+                      Container(
+
+
+                      //  margin: EdgeInsets.all(20.0),
+                        height: size.height*0.11,
+                        child:        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+
+                            GestureDetector(
+                              onTap: null,
+                              child: Container(
+
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft:  Radius.circular(10),
+                                          topLeft:  Radius.circular(10)
+                                      )
+                                  ),
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Icon(Icons.chevron_left,color: Colors.white)),
+                            ),
+                            Container(
+                              height: size.height*0.1,
+                              width: size.width*0.7,
+                              padding: EdgeInsets.all(2.0),
+                              // child: PageView.builder(
+                              //   itemCount: mcqQuestions.length,
+                              //   controller: pageController,
+                              //   onPageChanged: _onPageViewChange,
+                              //   itemBuilder: (BuildContext context, int itemIndex,) {
+                              //     return GestureDetector(
+                              //       child: Container(
+                              //           width: 60.0,
+                              //           child: Text((itemIndex+1).toString())),
+                              //       onTap: (){
+                              //         print(Text((itemIndex+1).toString()));
+                              //
+                              //
+                              //         if(pageNo < itemIndex)
+                              //         {
+                              //
+                              //           validateAnsSpec(selectedFinal, itemIndex);
+                              //
+                              //
+                              //         }
+                              //
+                              //         // validateAns(selectedFinal);
+                              //       },
+                              //     );
+                              //   },
+                              // ),
+
+                              child: ListView(
+                                // controller: pageController,
+                                // This next line does the trick.
+                                scrollDirection: Axis.horizontal,
+
+                                children: List.generate(mapList.length,(itemIndex){
+                                  return GestureDetector(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Expanded(
+                                          child:
+                                          mapList[itemIndex] == null ? Container() : pageNo == itemIndex ? Icon(
+
+                                            Icons.mode_edit,
+                                            color: Colors.redAccent,
+                                            size: size.height*0.04,
+                                          ):
+                                          Icon(
+
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                            size: size.height*0.04,
+                                          ),
+                                        ),
+                                        Container(
+
+                                            width: 60.0,
+                                            height: size.height*0.05,
+                                            child: Center(child: Text((itemIndex+1).toString()))
+                                        ),
+
+                                      ],
+                                    ),
+                                    onTap: (){
+                                      print(Text((itemIndex+1).toString()));
+
+
+                                      if(pageNo < itemIndex)
+                                      {
+
+                                        validateAnsSpec(selectedFinal, itemIndex);
+
+
+                                      }
+
+                                      // validateAns(selectedFinal);
+                                    },
+                                  );
+                                }),
+                              ),
+                            ),
+
+
+                            GestureDetector(
+
+                              onTap: (){
+
+                                validateAns(selectedFinal);
+
+                                // print(qAndAList.length);
+                                // Navigator.push(context, MaterialPageRoute(
+                                //     builder: (context) =>
+                                //         AnsBody(
+                                //           quesList: mcqQuestions,
+                                //           pageNo: pageNo + 1,
+                                //           correct: correct,
+                                //           tot: total,
+                                //           ansList: qAndAList,
+                                //           mcqId: mcqPprId,
+                                //           subId : widget.subId,
+                                //           time : 300,
+                                //           iniTime: strtEndT,
+                                //           setEnd : widget.mcqTime,
+                                //
+                                //         )
+                                // ));
+                                // pageController.animateToPage(
+                                //   current_index +1 ,
+                                //   duration: const Duration(milliseconds: 400),
+                                //   curve: Curves.easeInOut,
+                                // );
+
+                                setState(() {
+                                 // pgNo = current_index + 1;
+                                });
+                                /* Navigator.push(context, MaterialPageRoute(
+                        builder: (context) =>
+                            AnsBody(
+                              quesList: widget.quesList,
+                              pageNo: current_index + 1,
+                              correct: corPrev,
+                              ansList: finQAndAList,
+                              mcqId: widget.mcqId,
+                              subId: widget.subId,
+                              time : restTime,
+                              iniTime: widget.iniTime,
+                              setEnd : widget.setEnd,
+
+                            )
+                    ));*/
+                              },
+
+                              child: Container(
+
+                                  decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.only(
+                                          bottomRight:  Radius.circular(10),
+                                          topRight:  Radius.circular(10)
+                                      )
+                                  ),
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Icon(Icons.keyboard_arrow_right,color: Colors.white,)),
+                            ),
+
+                          ],
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Row(
@@ -900,87 +1315,23 @@ class _McqBodyState extends State<McqBody> {
                               width: size.width * 0.01,
                             ),
 
-                            Expanded(
-
-                              child:
-                              MaterialButton(
-                                elevation: 2,
-                                child: Text('Next'),
-                                onPressed: (){
-
-                                  validateAns(selectedFinal);
-                                },
-                                color: Colors.indigoAccent,
-                              ),
-                            )
+                            // Expanded(
+                            //
+                            //   child:
+                            //   MaterialButton(
+                            //     elevation: 2,
+                            //     child: Text('Next'),
+                            //     onPressed: (){
+                            //
+                            //       validateAns(selectedFinal);
+                            //     },
+                            //     color: Colors.indigoAccent,
+                            //   ),
+                            // )
 
                           ],
                         ),
                       ),
-                      // _buildCircleIndicator5()
-                      // Container(
-                      //   child: Row(
-                      //     children: [
-                      //       Expanded(child: Container(
-                      //         width: size.width*0.1,
-                      //       )),
-                      //       FloatingActionButton(
-                      //         backgroundColor: Colors.indigo[400],
-                      //         onPressed: (){
-                      //           _settingModalBottomSheet(context);
-                      //         },
-                      //         child: new Icon(Icons.arrow_drop_up),
-                      //         shape: RoundedRectangleBorder(),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                      // Expanded(
-                      //   child: ListView(
-                      //     children: <Widget>[
-                      //
-                      //
-                      //
-                      //     ]
-                      //         .map((item) => Padding(
-                      //       child: item,
-                      //       padding: EdgeInsets.all(1.0),
-                      //     ))
-                      //         .toList(),
-                      //   ),
-                      // ),
-                      // SmoothPageIndicator(
-                      //                       //     controller: _pageController,  // PageController
-                      //                       //     count:  mcqQuestions.length,
-                      //                       //     effect:  WormEffect(),  // your preferred effect
-                      //                       //     onDotClicked: (index){
-                      //                       //
-                      //                       //     }
-                      //                       // )
-                      Container(
-                        height: size.height * 0.1,
-                        width: size.width*0.5,
-                        color: Colors.indigo,
-                        child: ListView(
-                          // This next line does the trick.
-                          scrollDirection: Axis.horizontal,
-                          children: mcqQuestions.map((e) => Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: GestureDetector(
-                              child: Container(
-                                width: size.width*0.1,
-                                // height: size.height*0.1,
-                                child: Center(child: Text((mcqQuestions.indexOf(e)+1).toString())),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.blueAccent),
-                                    shape: BoxShape.circle,
-                                    // color: Color(0xFFe0f2f1)
-                                ),
-                              ),
-                            ),
-                          )).toList(),
-                        ),
-                      )
 
 
                     ],

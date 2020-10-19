@@ -1,5 +1,6 @@
 import 'package:educationapp/finalres.dart';
 import 'package:educationapp/homepage.dart';
+import 'package:educationapp/review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/countdown_timer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +15,7 @@ class AnsBody extends StatefulWidget {
   //final List quesList = List();
   final int pageNo;
   final List<dynamic> quesList;
+  final List<dynamic> mapped;
   final int correct;
   final double tot;
   final Map ansList;
@@ -21,18 +23,18 @@ class AnsBody extends StatefulWidget {
   final String subId, setEnd;
   final int time, iniTime;
 
-  AnsBody({List<dynamic> quesList, this.pageNo, this.correct, this.tot, this.ansList, this.mcqId, this.subId, this.time, this.iniTime, this.setEnd}) : this.quesList = quesList ?? [];
+  AnsBody({List<dynamic> quesList, List<dynamic> mapped, this.pageNo, this.correct, this.tot, this.ansList, this.mcqId, this.subId, this.time, this.iniTime, this.setEnd}) : this.quesList = quesList, this.mapped = mapped ?? [];
 
   @override
   _AnsBodyState createState() => _AnsBodyState();
 }
 
 class _AnsBodyState extends State<AnsBody> {
-  bool ansOneB = false;
-  bool ansTwoB = false;
-  bool ansThreeB = false;
-  bool ansFourB = false;
-  bool ansFiveB = false;
+  bool ansOneB ;
+  bool ansTwoB ;
+  bool ansThreeB ;
+  bool ansFourB ;
+  bool ansFiveB ;
   int endTime;
   List userData = List();
   String udId;
@@ -59,27 +61,139 @@ class _AnsBodyState extends State<AnsBody> {
   final _pageController = PageController();
   final _currentPageNotifier = ValueNotifier<int>(0);
   final _boxHeight = 150.0;
+  int current_index;
 
 
   @override
   void initState() {
+
+    
+
     // TODO: implement initState
     super.initState();
     // print(widget.pageNo);
     // print(widget.quesList[widget.pageNo]);
+
+    List map = widget.mapped;
+    print(map);
+    print("Map Ans Called");
+    print(widget.mapped[widget.pageNo]);
+
+    pgNo = widget.pageNo;
+    print(map[pgNo]);
+
+    if(map[pgNo] == "1"){
+      print("One");
+      setState(() {
+        ansOneB = true;
+      });
+    }
+    else{
+      setState(() {
+        ansOneB = false;
+      });
+    }
+    if (map[pgNo] == "2"){
+      print("Two");
+      setState(() {
+        ansTwoB = true;
+      });
+    }
+    else{
+      setState(() {
+        ansTwoB = false;
+      });
+    }
+    if (map[pgNo] == 3){
+      print("Three");
+      setState(() {
+        ansThreeB = true;
+      });
+    }
+    else{
+      setState(() {
+        ansThreeB = false;
+      });
+    }
+    if (map[pgNo] == 4){
+      print("Four");
+      setState(() {
+        ansFourB = true;
+      });
+    }
+    else{
+      setState(() {
+        ansFourB = false;
+      });
+    }
+    
+    if (map[pgNo] == 5){
+      print("Five");
+      setState(() {
+        ansFiveB = true;
+      });
+    }
+    else{
+      setState(() {
+        ansFiveB = false;
+      });
+    }
+    
+
     corPrev  = widget.correct;
     finQAndAList = widget.ansList;
     pgNo = widget.pageNo;
+    current_index = pgNo;
     strtEndT = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
     setState(() {
       int t = widget.time;
       endTime = widget.iniTime + t;
       _currentPageNotifier.value = widget.pageNo;
+
+
+
+      // ansOneB = widget.mapped[widget.pageNo] == 1 ? true: false;
+      // ansTwoB = widget.mapped[widget.pageNo] == 2 ? true: false;
+      // ansThreeB = widget.mapped[widget.pageNo] == 3 ? true: false;
+      // ansFourB = widget.mapped[widget.pageNo] == 4 ? true: false;
+      // ansFiveB = widget.mapped[widget.pageNo] == 5 ? true: false;
+
     });
 
     print(widget.time);
     getUserData();
+    setState(() {
+      _currentPageNotifier.value = 0;
+
+    });
   }
+
+  mapAns(){
+    
+  }
+
+
+  // PageController pageController = PageController(viewportFraction: .2,initialPage: 0,keepPage:true );
+
+  _onPageViewChange(int page) {
+
+
+    // setState(() {
+    //
+    //   current_index=page;
+    //
+    // });
+    print("Current Page: " + page.toString());
+    int previousPage = page;
+
+    if(page != 0) previousPage--;
+
+
+    else previousPage = 2;
+
+    print("Previous page: $previousPage");
+  }
+
 
   getUserData()async{
     print("getUser called");
@@ -202,7 +316,7 @@ class _AnsBodyState extends State<AnsBody> {
 
     transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
 
-    var restTime =  (endTime - transTime)+(3000*(pgNo+1));
+    var restTime =  (endTime - transTime);
 
 
     if(ans != null) {
@@ -226,6 +340,18 @@ class _AnsBodyState extends State<AnsBody> {
       });
 
 
+      widget.mapped[pgNo] = ans;
+      print(widget.quesList);
+       print(widget.pageNo + 1);
+        print(corPrev);
+         print(finQAndAList);
+          print(widget.mcqId);
+           print(widget.subId);
+            print(restTime);
+             print(widget.iniTime);
+             print(widget.setEnd);
+             print(widget.mapped);
+
       Navigator.push(context, MaterialPageRoute(
           builder: (context) =>
               AnsBody(
@@ -238,11 +364,21 @@ class _AnsBodyState extends State<AnsBody> {
                 time : restTime,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
+                mapped : widget.mapped,
 
               )
       ));
+      // pageController.animateToPage(
+      //     current_index +1 ,
+      //     duration: const Duration(milliseconds: 400),
+      //     curve: Curves.easeInOut,
+      //   );
     }
     else if(ans == null) {
+
+      // widget.mapped[widget.pageNo] = 0;
+
+
       Navigator.push(context, MaterialPageRoute(
           builder: (context) =>
               AnsBody(
@@ -255,9 +391,102 @@ class _AnsBodyState extends State<AnsBody> {
                 time: restTime,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
+                mapped : widget.mapped,
 
               )
       ));
+      // pageController.animateToPage(
+      //       current_index +1 ,
+      //       duration: const Duration(milliseconds: 400),
+      //       curve: Curves.easeInOut,
+      //     );
+    }
+
+
+  }
+
+  validateAnsSpec(ans, pg){
+
+    setState(() {
+      isClosed = false;
+    });
+
+    transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
+
+    var restTime =  (endTime - transTime);
+
+
+    if(ans != null) {
+      int corAns = int.parse(widget.quesList[widget.pageNo]['answer']);
+      quesAmt = widget.quesList.length;
+      assert(corAns is int);
+      int selAns = int.parse(ans);
+      assert(selAns is int);
+      print(ans);
+      print(corAns);
+      if (selAns == corAns) {
+        print("Question " + widget.quesList[widget.pageNo]['no'] + " Correct");
+        corPrev = corPrev + 1;
+      }
+      else {
+        print("Question " + widget.quesList[widget.pageNo]['no'] + " wrong");
+      }
+      setState(() {
+        total = (corPrev / quesAmt) * 100;
+        finQAndAList["$pgNo"] = selAns;
+      });
+
+
+      widget.mapped[pgNo] = ans;
+
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+          builder: (context) =>
+              AnsBody(
+                quesList: widget.quesList,
+                pageNo: pg,
+                correct: corPrev,
+                ansList: finQAndAList,
+                mcqId: widget.mcqId,
+                subId: widget.subId,
+                time : restTime,
+                iniTime: widget.iniTime,
+                setEnd : widget.setEnd,
+                mapped : widget.mapped,
+
+              )
+      ), (Route<dynamic> route) => false);
+      // pageController.animateToPage(
+      //   current_index +1 ,
+      //   duration: const Duration(milliseconds: 400),
+      //   curve: Curves.easeInOut,
+      // );
+    }
+    else if(ans == null) {
+
+      // widget.mapped[widget.pageNo] = 0;
+
+
+     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+          builder: (context) =>
+              AnsBody(
+                quesList: widget.quesList,
+                pageNo: pg,
+                correct: corPrev,
+                ansList: finQAndAList,
+                mcqId: widget.mcqId,
+                subId: widget.subId,
+                time: restTime,
+                iniTime: widget.iniTime,
+                setEnd : widget.setEnd,
+                mapped : widget.mapped,
+
+              )
+      ), (Route<dynamic> route) => false);
+      // pageController.animateToPage(
+      //   current_index +1 ,
+      //   duration: const Duration(milliseconds: 400),
+      //   curve: Curves.easeInOut,
+      // );
     }
 
 
@@ -356,6 +585,73 @@ class _AnsBodyState extends State<AnsBody> {
 
   }
 
+  validateAnsFinalTime(ans){
+
+    setState(() {
+      isClosed = false;
+    });
+
+    transTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
+
+    var restTime =  (endTime - transTime)+3000;
+
+    if(ans != null){
+      int corAns = int.parse(widget.quesList[widget.pageNo]['answer']);
+      quesAmt = widget.quesList.length;
+      assert(corAns is int);
+      int selAns = int.parse(ans);
+      assert(selAns is int);
+      print(ans);
+      print(corAns);
+      if(selAns == corAns)
+      {
+        print("Question "+ widget.quesList[widget.pageNo]['no'] +" Correct");
+        corPrev = corPrev + 1;
+      }
+      else{
+        print("Question "+ widget.quesList[widget.pageNo]['no'] +" wrong");
+        //wrong = wrong+1;
+      }
+      setState(() {
+        total = (corPrev/quesAmt)*100;
+        finQAndAList["$pgNo"] = selAns ;
+      });
+
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => FinalRes(
+            tot : total,
+            ansList: finQAndAList,
+            realAns: widget.quesList,
+            mcqId: widget.mcqId,
+            subId: widget.subId,
+            time : restTime,
+            iniTime: widget.iniTime,
+            setEnd : widget.setEnd,
+          )
+      ));
+    }
+    else if(ans == null) {
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) =>
+              FinalRes(
+                tot: total,
+                ansList: finQAndAList,
+                realAns: widget.quesList,
+                mcqId: widget.mcqId,
+                subId: widget.subId,
+                time: restTime,
+                iniTime: widget.iniTime,
+                setEnd : widget.setEnd,
+              )
+      ));
+    }
+
+
+
+  }
+
+
+
   _buildCircleIndicator5() {
     return CirclePageIndicator(
       size: 8.0,
@@ -377,7 +673,7 @@ class _AnsBodyState extends State<AnsBody> {
           padding: const EdgeInsets.all(4.0),
           child: StepPageIndicator(
 
-            itemCount: 50,
+            itemCount: widget.quesList.length,
             currentPageNotifier: _currentPageNotifier,
             size: 18,
             onPageSelected: (int index) {
@@ -393,6 +689,8 @@ class _AnsBodyState extends State<AnsBody> {
   @override
   Widget build(BuildContext context) {
 
+    mapAns();
+
     bool _allow = false;
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -403,7 +701,7 @@ class _AnsBodyState extends State<AnsBody> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: isClosed ? CountdownTimer(endTime: endTime,
+            child:CountdownTimer(endTime: endTime,
               hoursTextStyle:GoogleFonts.yesevaOne(
                   fontSize: size.width * 0.05,
                   fontWeight: FontWeight.w600,
@@ -428,8 +726,9 @@ class _AnsBodyState extends State<AnsBody> {
                 //     )
                 // ));
                 //validateAns(selectedFinal);
+                // validateAnsFinalTime(selectedFinal);
               },
-            ): Container(),
+            ),
           ),
           // Padding(
           //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
@@ -677,7 +976,7 @@ class _AnsBodyState extends State<AnsBody> {
                     thickness: 1,
                     color: Colors.grey,
                   ),
-                  (widget.quesList[widget.pageNo]['ans_five'] != null) ? CheckboxListTile(
+                  (!(widget.quesList[widget.pageNo]['ans_five']).isEmpty) ? CheckboxListTile(
                       title: Text(widget.quesList[widget.pageNo]['ans_five']),
                       value: ansFiveB,
                       onChanged: (val) {
@@ -772,6 +1071,202 @@ class _AnsBodyState extends State<AnsBody> {
           //     )
           //   ],
           // ),
+
+          // _buildCircleIndicator5()
+          Container(
+
+
+            //  margin: EdgeInsets.all(20.0),
+            height: size.height*0.11,
+            child:        Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+
+                GestureDetector(
+                  onTap: (){
+                    // pageController.animateToPage(
+                    //   current_index -1 ,
+                    //   duration: const Duration(milliseconds: 400),
+                    //   curve: Curves.easeInOut,
+                    // );
+                    // Navigator.pop(context);
+                    int no = pgNo -1;
+                    validateAnsSpec(selectedFinal, no);
+                  },
+                  child: Container(
+
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.only(
+                              bottomLeft:  Radius.circular(10),
+                              topLeft:  Radius.circular(10)
+                          )
+                      ),
+                      padding: EdgeInsets.all(12.0),
+                      child: Icon(Icons.chevron_left,color: Colors.white)),
+                ),
+                Container(
+                  height: size.height*0.1,
+                  width: size.width*0.7,
+                  padding: EdgeInsets.all(2.0),
+                  // child: PageView.builder(
+                  //   itemCount: widget.quesList.length,
+                  //   controller: pageController,
+                  //   onPageChanged: _onPageViewChange,
+                  //   itemBuilder: (BuildContext context, int itemIndex,) {
+                  //     return GestureDetector(
+                  //       child: Container(
+                  //           width: 60.0,
+                  //           child: Text((itemIndex+1).toString())),
+                  //       onTap: (){
+                  //         // Navigator.push(context, MaterialPageRoute(
+                  //         //     builder: (context) => Review(
+                  //         //       showResList : widget.quesList,
+                  //         //       userSel: widget.ansList["$itemIndex"],
+                  //         //       qNo : itemIndex,
+                  //         //       ans : widget.ansList,
+                  //         //
+                  //         //     )
+                  //         // ));
+                  //
+                  //         // validateAns(selectedFinal);
+                  //         print(itemIndex);
+                  //         print(pgNo);
+                  //
+                  //         validateAnsSpec(selectedFinal, itemIndex);
+                  //
+                  //         // if(pgNo > itemIndex)
+                  //         // {
+                  //         //   int count =  pgNo- itemIndex;
+                  //         //   print("GO back" + count.toString() + "pages" );
+                  //         //
+                  //         //   int counts = count;
+                  //         //
+                  //         //   validateAnsSpec(selectedFinal, itemIndex);
+                  //         //
+                  //         // }
+                  //         // else{
+                  //         //   validateAnsSpec(selectedFinal, itemIndex); // here must pass the selected page number so have to create a seperate function for this.
+                  //         // }
+                  //
+                  //       },
+                  //     );
+                  //   },
+                  // ),
+                  child: ListView(
+                    // This next line does the trick.
+                    // controller: pageController,
+                    scrollDirection: Axis.horizontal,
+                    children: List.generate(widget.mapped.length,(itemIndex){
+                      return GestureDetector(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(
+                              child: pgNo == itemIndex ? Icon(
+
+                        Icons.mode_edit,
+                        color: Colors.redAccent,
+                        size: size.height*0.04,
+                        ):
+                              widget.mapped[itemIndex] == null ? Container() :
+                              Icon(
+
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: size.height*0.04,
+                              ),
+                            ),
+                            Container(
+
+                                width: 60.0,
+                                height: size.height*0.05,
+                                child: Center(child: Text((itemIndex+1).toString()))
+                            ),
+
+                          ],
+                        ),
+                        onTap: (){
+                          print(Text((itemIndex+1).toString()));
+
+
+
+                            validateAnsSpec(selectedFinal, itemIndex);
+
+
+                          // validateAns(selectedFinal);
+                        },
+                      );
+                    }),
+                  ),
+                ),
+
+
+                GestureDetector(
+
+                  onTap: (){
+
+                    validateAns(selectedFinal);
+
+                    // print(qAndAList.length);
+                    // Navigator.push(context, MaterialPageRoute(
+                    //     builder: (context) =>
+                    //         AnsBody(
+                    //           quesList: mcqQuestions,
+                    //           pageNo: pageNo + 1,
+                    //           correct: correct,
+                    //           tot: total,
+                    //           ansList: qAndAList,
+                    //           mcqId: mcqPprId,
+                    //           subId : widget.subId,
+                    //           time : 300,
+                    //           iniTime: strtEndT,
+                    //           setEnd : widget.mcqTime,
+                    //
+                    //         )
+                    // ));
+                    // pageController.animateToPage(
+                    //   current_index +1 ,
+                    //   duration: const Duration(milliseconds: 400),
+                    //   curve: Curves.easeInOut,
+                    // );
+
+                    setState(() {
+                      // pgNo = current_index + 1;
+                    });
+                    /* Navigator.push(context, MaterialPageRoute(
+                        builder: (context) =>
+                            AnsBody(
+                              quesList: widget.quesList,
+                              pageNo: current_index + 1,
+                              correct: corPrev,
+                              ansList: finQAndAList,
+                              mcqId: widget.mcqId,
+                              subId: widget.subId,
+                              time : restTime,
+                              iniTime: widget.iniTime,
+                              setEnd : widget.setEnd,
+
+                            )
+                    ));*/
+                  },
+
+                  child: Container(
+
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.only(
+                              bottomRight:  Radius.circular(10),
+                              topRight:  Radius.circular(10)
+                          )
+                      ),
+                      padding: EdgeInsets.all(12.0),
+                      child: Icon(Icons.keyboard_arrow_right,color: Colors.white,)),
+                ),
+
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(4.0),
             child: Container(
@@ -816,48 +1311,30 @@ class _AnsBodyState extends State<AnsBody> {
                       color: Colors.indigoAccent,
                     ),
                   ),
-                  SizedBox(
-                    width: size.width*0.01,
-                  ),
-                  Expanded(
-
-                    child: widget.pageNo < widget.quesList.length-1 ?  MaterialButton(
-                      elevation: 2,
-                      child: Text('Next'),
-                      onPressed: (){
-
-                        validateAns(selectedFinal);
-
-                      },
-                      color: Colors.indigoAccent,
-                    ):
-                    MaterialButton(
-                      elevation: 2,
-                      child: Text('Next'),
-                      onPressed: null,
-                      color: Colors.indigoAccent,
-                    ),
-                  )
+                  // SizedBox(
+                  //   width: size.width*0.01,
+                  // ),
+                  // Expanded(
+                  //
+                  //   child: widget.pageNo < widget.quesList.length-1 ?  MaterialButton(
+                  //     elevation: 2,
+                  //     child: Text('Next'),
+                  //     onPressed: (){
+                  //
+                  //       validateAns(selectedFinal);
+                  //
+                  //     },
+                  //     color: Colors.indigoAccent,
+                  //   ):
+                  //   MaterialButton(
+                  //     elevation: 2,
+                  //     child: Text('Next'),
+                  //     onPressed: null,
+                  //     color: Colors.indigoAccent,
+                  //   ),
+                  // )
                 ],
               ),
-            ),
-          ),
-          // _buildCircleIndicator5()
-          Container(
-            child: Row(
-              children: [
-                Expanded(child: Container(
-                  width: size.width*0.1,
-                )),
-                FloatingActionButton(
-                  backgroundColor: Colors.indigo[400],
-                  onPressed: (){
-                    _settingModalBottomSheet(context);
-                  },
-                  child: new Icon(Icons.arrow_drop_up),
-                  shape: RoundedRectangleBorder(),
-                ),
-              ],
             ),
           ),
           // Column(

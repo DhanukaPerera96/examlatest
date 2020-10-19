@@ -200,7 +200,7 @@ class _FinalResState extends State<FinalRes> {
                         child: new Card(
                             color: widget.ansList["$index"] == int.parse(widget.realAns[index]['answer'])? Colors.green : Colors.red,
                             child: new Center(
-                              child: new Text('$index'),
+                              child: new Text((index+1).toString()),
                             )
                         ),
                       ),
