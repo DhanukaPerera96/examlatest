@@ -113,10 +113,10 @@ class _NoticesState extends State<Notices> {
                       child: Row(
                         children: <Widget>[
                           Expanded(
-                            child: Container(
+                            child: list['image'] != null ? Container(
                               decoration: new BoxDecoration(
                                 image: DecorationImage(
-                                  image: NetworkImage("http://rankme.ml/dashbord/dist/"+list['image']),
+                                  image: NetworkImage(list['image']),
                                   fit: BoxFit.cover,
                                 ),
                                 color: Colors.redAccent,
@@ -126,7 +126,7 @@ class _NoticesState extends State<Notices> {
 
                               height: double.infinity,
                               width: size.width*6,
-                            ),
+                            ) : SizedBox(height: 1.0,),
                           ),
                           SizedBox(
                             width: size.width*0.1,

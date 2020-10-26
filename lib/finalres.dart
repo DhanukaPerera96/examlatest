@@ -78,6 +78,14 @@ class _FinalResState extends State<FinalRes> {
   Widget build(BuildContext context) {
     bool _allow = false;
     Size size = MediaQuery.of(context).size;
+
+    String _printDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, "0");
+      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    }
+
     return WillPopScope(
       child: Scaffold(
         appBar: AppBar(
@@ -123,7 +131,17 @@ class _FinalResState extends State<FinalRes> {
                                 style: TextStyle(color: Colors.white, fontSize: 20),
                               ),
                               onPressed: () async {
-                                String time = ((int.parse(widget.setEnd) - widget.time/60000)).toStringAsFixed(2);
+
+                                var myInt = int.parse(widget.setEnd);
+                                assert(myInt is int);
+                                int times = myInt * 60;
+
+                                final now = Duration(seconds: widget.time);
+                                final init = Duration(seconds: times);
+                                print("${_printDuration(now)}");
+
+
+                                String time = _printDuration(init - now);
                                 String score = widget.tot.toString();
                                 String paper = widget.mcqId;
                                 String user = udId;

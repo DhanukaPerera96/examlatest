@@ -59,7 +59,7 @@ class _LongQBodyState extends State<LongQBody> {
                               ),
                               image: DecorationImage(
 
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.qImage),
+                                image: NetworkImage(widget.qImage),
                                 fit: BoxFit.fill,
 
                               ),

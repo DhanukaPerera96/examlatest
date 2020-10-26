@@ -10,6 +10,7 @@ import 'package:page_view_indicators/step_page_indicator.dart';
 import 'dart:convert';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:page_view_indicators/circle_page_indicator.dart';
+import 'package:timer_count_down/timer_count_down.dart';
 
 class AnsBody extends StatefulWidget {
   //final List quesList = List();
@@ -37,7 +38,10 @@ class _AnsBodyState extends State<AnsBody> {
   bool ansFiveB ;
   int endTime;
   List userData = List();
+  List addsData = List();
   String udId;
+  String addPath;
+  String userDisId;
   int qNumber;
   int pgNo;
   String qNo, ansNo, selectedFinal;
@@ -46,6 +50,8 @@ class _AnsBodyState extends State<AnsBody> {
   Map<String, int> finQAndAList = {};
   int strtEndT, transTime;
   bool isClosed = true;
+  int timeLeft;
+  int t;
 
   final _items = [
     Colors.blue,
@@ -63,9 +69,15 @@ class _AnsBodyState extends State<AnsBody> {
   final _boxHeight = 150.0;
   int current_index;
 
+  int groupVal = 0;
+
+
+
+  ScrollController _controller;
 
   @override
   void initState() {
+
 
     
 
@@ -77,67 +89,13 @@ class _AnsBodyState extends State<AnsBody> {
     List map = widget.mapped;
     print(map);
     print("Map Ans Called");
-    print(widget.mapped[widget.pageNo]);
+    // print(widget.mapped[widget.pageNo]);
 
     pgNo = widget.pageNo;
-    print(map[pgNo]);
+    // print(map[pgNo]);
 
-    if(map[pgNo] == "1"){
-      print("One");
-      setState(() {
-        ansOneB = true;
-      });
-    }
-    else{
-      setState(() {
-        ansOneB = false;
-      });
-    }
-    if (map[pgNo] == "2"){
-      print("Two");
-      setState(() {
-        ansTwoB = true;
-      });
-    }
-    else{
-      setState(() {
-        ansTwoB = false;
-      });
-    }
-    if (map[pgNo] == 3){
-      print("Three");
-      setState(() {
-        ansThreeB = true;
-      });
-    }
-    else{
-      setState(() {
-        ansThreeB = false;
-      });
-    }
-    if (map[pgNo] == 4){
-      print("Four");
-      setState(() {
-        ansFourB = true;
-      });
-    }
-    else{
-      setState(() {
-        ansFourB = false;
-      });
-    }
-    
-    if (map[pgNo] == 5){
-      print("Five");
-      setState(() {
-        ansFiveB = true;
-      });
-    }
-    else{
-      setState(() {
-        ansFiveB = false;
-      });
-    }
+
+
     
 
     corPrev  = widget.correct;
@@ -146,7 +104,7 @@ class _AnsBodyState extends State<AnsBody> {
     current_index = pgNo;
     strtEndT = DateTime.now().millisecondsSinceEpoch + 1000 * 60;
     setState(() {
-      int t = widget.time;
+      t = widget.time;
       endTime = widget.iniTime + t;
       _currentPageNotifier.value = widget.pageNo;
 
@@ -162,10 +120,18 @@ class _AnsBodyState extends State<AnsBody> {
 
     print(widget.time);
     getUserData();
-    setState(() {
-      _currentPageNotifier.value = 0;
+    // print(map[pgNo]);
+    if(map[pgNo] != null){
+      setState(() {
+        _currentPageNotifier.value = 0;
 
-    });
+        var myInt = int.parse(map[pgNo]);
+        assert(myInt is int);
+        groupVal = myInt;
+
+      });
+    }
+
   }
 
   mapAns(){
@@ -216,10 +182,46 @@ class _AnsBodyState extends State<AnsBody> {
         setState(() {
           userData = json.decode(jsonDataString.toString());
           udId = userData[0]['id'];
+          userDisId = userData[0]['district_id'];
+        });
+        getAdds(widget.mcqId, userDisId);
+      }
+    }
+  }
 
+  getAdds(ppr, dis)async{
+
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+
+    String mcqPpr = ppr;
+    String district = dis;
+
+    var url = 'http://rankme.ml/getAdds.php';
+    final response = await http.post(Uri.encodeFull(url),headers: {"Accept":"application/json"},
+        body: {
+          "ppr" : mcqPpr,
+          "district" : district,
+        }
+    );
+    if(response.body.toString() != "Error") {
+      String jsonDataString = response.body;
+      var data = jsonDecode(jsonDataString);
+
+      if (this.mounted) {
+        setState(() {
+          addsData = json.decode(jsonDataString.toString());
+          addPath = addsData[0]['img'];
         });
       }
     }
+  }
+
+
+      String _printDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   pauseExit() async{
@@ -244,6 +246,7 @@ class _AnsBodyState extends State<AnsBody> {
     String tots = tot.toStringAsFixed(2);
     String pg = page.toString();
     String li = jsonEncode(list);
+    String timeL = timeLeft.toString();
 
     print(uId);
     // print(subId);
@@ -260,13 +263,15 @@ class _AnsBodyState extends State<AnsBody> {
     });
 
 
+
+
     var url = 'http://rankme.ml/submitPause.php';
     final response = await http.post(Uri.encodeFull(url),headers: {"Accept":"application/json"},
         body: {
           "uId" : uId,
           "subId" : subId,
           "papers_id" : ppr,
-          "time" : time,
+          "time" : timeL,
           "tot" : tots,
           "page" : pg,
           "ans" : li,
@@ -361,7 +366,7 @@ class _AnsBodyState extends State<AnsBody> {
                 ansList: finQAndAList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
-                time : restTime,
+                time : timeLeft,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
                 mapped : widget.mapped,
@@ -388,7 +393,7 @@ class _AnsBodyState extends State<AnsBody> {
                 ansList: finQAndAList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
-                time: restTime,
+                time: timeLeft,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
                 mapped : widget.mapped,
@@ -448,7 +453,7 @@ class _AnsBodyState extends State<AnsBody> {
                 ansList: finQAndAList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
-                time : restTime,
+                time : timeLeft,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
                 mapped : widget.mapped,
@@ -475,7 +480,7 @@ class _AnsBodyState extends State<AnsBody> {
                 ansList: finQAndAList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
-                time: restTime,
+                time: timeLeft,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
                 mapped : widget.mapped,
@@ -551,7 +556,7 @@ class _AnsBodyState extends State<AnsBody> {
                     realAns: widget.quesList,
                     mcqId: widget.mcqId,
                     subId: widget.subId,
-                    time : restTime,
+                    time : timeLeft,
                     iniTime: widget.iniTime,
                     setEnd : widget.setEnd,
                   )
@@ -566,7 +571,7 @@ class _AnsBodyState extends State<AnsBody> {
                         realAns: widget.quesList,
                         mcqId: widget.mcqId,
                         subId: widget.subId,
-                        time: restTime,
+                        time: timeLeft,
                         iniTime: widget.iniTime,
                         setEnd : widget.setEnd,
                       )
@@ -624,7 +629,7 @@ class _AnsBodyState extends State<AnsBody> {
             realAns: widget.quesList,
             mcqId: widget.mcqId,
             subId: widget.subId,
-            time : restTime,
+            time : timeLeft,
             iniTime: widget.iniTime,
             setEnd : widget.setEnd,
           )
@@ -639,7 +644,7 @@ class _AnsBodyState extends State<AnsBody> {
                 realAns: widget.quesList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
-                time: restTime,
+                time: timeLeft,
                 iniTime: widget.iniTime,
                 setEnd : widget.setEnd,
               )
@@ -689,684 +694,953 @@ class _AnsBodyState extends State<AnsBody> {
   @override
   Widget build(BuildContext context) {
 
+
+
     mapAns();
 
     bool _allow = false;
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child:CountdownTimer(endTime: endTime,
-              hoursTextStyle:GoogleFonts.yesevaOne(
-                  fontSize: size.width * 0.05,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red
-              ),
-              minTextStyle: GoogleFonts.yesevaOne(
-                  fontSize: size.width * 0.05,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red
-              ),
-              secTextStyle: GoogleFonts.yesevaOne(
-                  fontSize: size.width * 0.05,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.redAccent
+
+    if(pgNo > 2){
+      double doubleVar = pgNo.toDouble();
+      double val = (size.width*0.14)*(doubleVar-2.0);
+      _controller = ScrollController(initialScrollOffset: val);
+    }
+
+    String _printDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, "0");
+      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    }
+
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Countdown(
+
+                seconds: t,
+                build: (_, double time) {
+
+                  final now = Duration(seconds: time.toInt());
+                  // print("${_printDuration(now)}");
+
+                    timeLeft = time.toInt();
+
+
+                  var t = time/ 60;
+                  return Text(
+                    _printDuration(now),
+                    style: GoogleFonts.yesevaOne(
+                            fontSize: size.width * 0.05,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red
+                        ),
+                  );
+                },
+                interval: Duration(milliseconds: 100),
+                onFinished: () {
+                  print('Timer is done!');
+                  validateAnsFinalTime(selectedFinal);
+
+
+                },
               ),
 
-              onEnd: (){
-                print("Game Over");
-                // Navigator.push(context, MaterialPageRoute(
-                //     builder: (context) => FinalRes(
-                //       tot : total,
-                //     )
-                // ));
-                //validateAns(selectedFinal);
-                // validateAnsFinalTime(selectedFinal);
-              },
+              // CountdownTimer(endTime: endTime,
+              //   hoursTextStyle:GoogleFonts.yesevaOne(
+              //       fontSize: size.width * 0.05,
+              //       fontWeight: FontWeight.w600,
+              //       color: Colors.red
+              //   ),
+              //   minTextStyle: GoogleFonts.yesevaOne(
+              //       fontSize: size.width * 0.05,
+              //       fontWeight: FontWeight.w600,
+              //       color: Colors.red
+              //   ),
+              //   secTextStyle: GoogleFonts.yesevaOne(
+              //       fontSize: size.width * 0.05,
+              //       fontWeight: FontWeight.w600,
+              //       color: Colors.redAccent
+              //   ),
+              //
+              //   onEnd: (){
+              //     print("Game Over");
+              //     // Navigator.push(context, MaterialPageRoute(
+              //     //     builder: (context) => FinalRes(
+              //     //       tot : total,
+              //     //     )
+              //     // ));
+              //     //validateAns(selectedFinal);
+              //     // validateAnsFinalTime(selectedFinal);
+              //   },
+              // ),
             ),
-          ),
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-          //   child: Row(
-          //     children: [
-          //
-          //
-          //
-          //     ],
-          //   ),
-          // ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              Text(widget.quesList[widget.pageNo]['text']),
-              widget.quesList[widget.pageNo]['image'] != null ? Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: new BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['image']),
-                      fit: BoxFit.cover,
-                    ),
-                    color: Colors.transparent,
-                  ),
-                  height: size.height*0.2,
-                  width: size.width*0.1,
-                ),
-              ): Container(width: 0, height: 0),
-            ],
-          ),
-
-
-          Expanded(
-            child: Container(
-              child: ListView(
-                children: <Widget>[
-
-
-                  CheckboxListTile(
-
-                      title: Text(widget.quesList[widget.pageNo]['ans_one']),
-                      value: ansOneB,
-                      onChanged: (val) {
-                        setState(() {
-                          // _onSubSelected(val,list['id']);
-                          // print(mcqQuestions[0]['no']);
-                          // print(mcqQuestions[0]['answer']);
-                          // print(mcqQuestions[0]['ans_one_no']);
-                          // qNo = mcqQuestions[0]['no'];
-                          // ansNo = mcqQuestions[0]['answer'];
-                          // selectedNoOne = mcqQuestions[0]['ans_one_no'];
-                          ansOneB = true;
-                          ansFiveB = false;
-                          ansTwoB = false;
-                          ansThreeB = false;
-                          ansFourB = false;
-                          selectedFinal = widget.quesList[widget.pageNo]['ans_one_no'];
-                          // qNumber = int.parse(qNo);
-                          // assert(qNumber is int);
-                        });
-                        // print(selectedSubList);
-                      },
-                      subtitle: widget.quesList[widget.pageNo]['ans_one_img'] != null ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_one_img']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.transparent,
-                            ),
-                            height: size.height*0.09,
-                            width: size.width*0.1,
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (_) {
-                              return DetailScreen(
-                                img: widget.quesList[widget.pageNo]['ans_one_img'],
-                              );
-                            }));
-                          },
-                        ),
-                      ): Container(width: 0, height: 0)
-                  ),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey,
-                  ),
-                  CheckboxListTile(
-                      title: Text(widget.quesList[widget.pageNo]['ans_two']),
-                      value: ansTwoB,
-                      onChanged: (val) {
-                        setState(() {
-                          // _onSubSelected(val,list['id']);
-                          // print(mcqQuestions[0]['no']);
-                          // print(mcqQuestions[0]['answer']);
-                          // print(mcqQuestions[0]['ans_two_no']);
-                          // qNo = mcqQuestions[0]['no'];
-                          // ansNo = mcqQuestions[0]['answer'];
-                          // selectedNoTwo = mcqQuestions[0]['ans_two_no'];
-                          ansTwoB = true;
-                          ansFiveB = false;
-                          ansOneB = false;
-                          ansThreeB = false;
-                          ansFourB = false;
-                          selectedFinal = widget.quesList[widget.pageNo]['ans_two_no'];
-                          // qNumber = int.parse(qNo);
-                          // assert(qNumber is int);
-                        });
-                        // print(selectedSubList);
-
-                      },
-                      subtitle: widget.quesList[widget.pageNo]['ans_two_img'] != null ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_two_img']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.transparent,
-                            ),
-                            height: size.height*0.09,
-                            width: size.width*0.1,
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (_) {
-                              return DetailScreen(
-                                img: widget.quesList[widget.pageNo]['ans_two_img'],
-                              );
-                            }));
-                          },
-                        ),
-                      ): Container(width: 0, height: 0)
-                  ),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey,
-                  ),
-                  CheckboxListTile(
-                      title: Text(widget.quesList[widget.pageNo]['ans_three']),
-                      value: ansThreeB,
-                      onChanged: (val) {
-                        setState(() {
-                          // _onSubSelected(val,list['id']);
-                          // print(mcqQuestions[0]['no']);
-                          // print(mcqQuestions[0]['answer']);
-                          // print(mcqQuestions[0]['ans_three_no']);
-                          // qNo = mcqQuestions[0]['no'];
-                          // ansNo = mcqQuestions[0]['answer'];
-                          // selectedNoThree = mcqQuestions[0]['ans_three_no'];
-                          ansThreeB = true;
-                          ansFiveB = false;
-                          ansOneB = false;
-                          ansTwoB = false;
-                          ansFourB = false;
-                          selectedFinal = widget.quesList[widget.pageNo]['ans_three_no'];
-                          // qNumber = int.parse(qNo);
-                          // assert(qNumber is int);
-                        });
-                        // print(selectedSubList);
-                      },
-                      subtitle: widget.quesList[widget.pageNo]['ans_three_img'] != null ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_three_img']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.transparent,
-                            ),
-                            height: size.height*0.09,
-                            width: size.width*0.1,
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (_) {
-                              return DetailScreen(
-                                img: widget.quesList[widget.pageNo]['ans_three_img'],
-                              );
-                            }));
-                          },
-                        ),
-                      ): Container(width: 0, height: 0)
-                  ),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey,
-                  ),
-                  CheckboxListTile(
-                      title: Text(widget.quesList[widget.pageNo]['ans_four']),
-                      value: ansFourB,
-                      onChanged: (val) {
-                        setState(() {
-                          // _onSubSelected(val,list['id']);
-                          // print(mcqQuestions[0]['no']);
-                          // print(mcqQuestions[0]['answer']);
-                          // print(mcqQuestions[0]['ans_four_no']);
-                          // qNo = mcqQuestions[0]['no'];
-                          // ansNo = mcqQuestions[0]['answer'];
-                          // selectedNoFour = mcqQuestions[0]['ans_four_no'];
-                          ansFourB = true;
-                          ansFiveB = false;
-                          ansOneB = false;
-                          ansTwoB = false;
-                          ansThreeB = false;
-                          selectedFinal = widget.quesList[widget.pageNo]['ans_four_no'];
-                          // qNumber = int.parse(qNo);
-                          // assert(qNumber is int);
-                        });
-                        // print(selectedSubList);
-                      },
-                      subtitle: widget.quesList[widget.pageNo]['ans_four_img'] != null ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_four_img']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.transparent,
-                            ),
-                            height: size.height*0.09,
-                            width: size.width*0.1,
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (_) {
-                              return DetailScreen(
-                                img: widget.quesList[widget.pageNo]['ans_four_img'],
-                              );
-                            }));
-                          },
-                        ),
-                      ): Container(width: 0, height: 0)
-                  ),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey,
-                  ),
-                  (!(widget.quesList[widget.pageNo]['ans_five']).isEmpty) ? CheckboxListTile(
-                      title: Text(widget.quesList[widget.pageNo]['ans_five']),
-                      value: ansFiveB,
-                      onChanged: (val) {
-                        setState(() {
-                          // _onSubSelected(val,list['id']);
-                          // print(mcqQuestions[0]['no']);
-                          // print(mcqQuestions[0]['answer']);
-                          // print(mcqQuestions[0]['ans_five_no']);
-                          // qNo = mcqQuestions[0]['no'];
-                          // ansNo = mcqQuestions[0]['answer'];
-                          // selectedNoFive = mcqQuestions[0]['ans_five_no'];
-                          ansFiveB = true;
-                          ansOneB = false;
-                          ansTwoB = false;
-                          ansThreeB = false;
-                          ansFourB = false;
-                          selectedFinal = widget.quesList[widget.pageNo]['ans_five_no'];
-                          // qNumber = int.parse(qNo);
-                          // assert(qNumber is int);
-                        });
-                        // print(selectedSubList);
-                      },
-                      subtitle: widget.quesList[widget.pageNo]['ans_five_img'] != null ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          child: Container(
-                            decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_five_img']),
-                                fit: BoxFit.cover,
-                              ),
-                              color: Colors.transparent,
-                            ),
-                            height: size.height*0.09,
-                            width: size.width*0.1,
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (_) {
-                              return DetailScreen(
-                                img: widget.quesList[widget.pageNo]['ans_five_img'],
-                              );
-                            }));
-                          },
-                        ),
-                      ): Container(width: 0, height: 0)
-                  ): SizedBox(
-                    height: 1.0,
-                  ),
-
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: _buildPageIndicator(),
-                  // ),
-
-                ],
-              ),
-            ),
-          ),
-          // Row(
-          //   crossAxisAlignment: CrossAxisAlignment.center,
-          //   children: [
-          //     Expanded(
-          //       child: widget.pageNo < widget.quesList.length ?  MaterialButton(
-          //         elevation: 2,
-          //         child: Text('Next'),
-          //         onPressed: (){
-          //
-          //           Navigator.push(context, MaterialPageRoute(
-          //               builder: (context) => AnsBody(
-          //                 quesList: widget.quesList,
-          //                 pageNo: widget.pageNo+1,
-          //
-          //               )
-          //           ));
-          //         },
-          //         color: Colors.indigoAccent,
-          //       ):
-          //       MaterialButton(
-          //         elevation: 2,
-          //         child: Text('Finish'),
-          //         onPressed: (){
-          //           print("End");
-          //
-          //           // Navigator.push(context, MaterialPageRoute(
-          //           //     builder: (context) => McqBody(
-          //           //
-          //           //     )
-          //           //));
-          //         },
-          //         color: Colors.indigoAccent,
-          //       ),
-          //     )
-          //   ],
-          // ),
-
-          // _buildCircleIndicator5()
-          Container(
-
-
-            //  margin: EdgeInsets.all(20.0),
-            height: size.height*0.11,
-            child:        Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+            //   child: Row(
+            //     children: [
+            //
+            //
+            //
+            //     ],
+            //   ),
+            // ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                GestureDetector(
-                  onTap: (){
-                    // pageController.animateToPage(
-                    //   current_index -1 ,
-                    //   duration: const Duration(milliseconds: 400),
-                    //   curve: Curves.easeInOut,
-                    // );
-                    // Navigator.pop(context);
-                    int no = pgNo -1;
-                    validateAnsSpec(selectedFinal, no);
-                  },
+                Text(widget.quesList[widget.pageNo]['text']),
+                widget.quesList[widget.pageNo]['image'] != null ? Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Container(
-
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.only(
-                              bottomLeft:  Radius.circular(10),
-                              topLeft:  Radius.circular(10)
-                          )
+                    decoration: new BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(widget.quesList[widget.pageNo]['image']),
+                        fit: BoxFit.cover,
                       ),
-                      padding: EdgeInsets.all(12.0),
-                      child: Icon(Icons.chevron_left,color: Colors.white)),
-                ),
-                Container(
-                  height: size.height*0.1,
-                  width: size.width*0.7,
-                  padding: EdgeInsets.all(2.0),
-                  // child: PageView.builder(
-                  //   itemCount: widget.quesList.length,
-                  //   controller: pageController,
-                  //   onPageChanged: _onPageViewChange,
-                  //   itemBuilder: (BuildContext context, int itemIndex,) {
-                  //     return GestureDetector(
-                  //       child: Container(
-                  //           width: 60.0,
-                  //           child: Text((itemIndex+1).toString())),
-                  //       onTap: (){
-                  //         // Navigator.push(context, MaterialPageRoute(
-                  //         //     builder: (context) => Review(
-                  //         //       showResList : widget.quesList,
-                  //         //       userSel: widget.ansList["$itemIndex"],
-                  //         //       qNo : itemIndex,
-                  //         //       ans : widget.ansList,
-                  //         //
-                  //         //     )
-                  //         // ));
-                  //
-                  //         // validateAns(selectedFinal);
-                  //         print(itemIndex);
-                  //         print(pgNo);
-                  //
-                  //         validateAnsSpec(selectedFinal, itemIndex);
-                  //
-                  //         // if(pgNo > itemIndex)
-                  //         // {
-                  //         //   int count =  pgNo- itemIndex;
-                  //         //   print("GO back" + count.toString() + "pages" );
-                  //         //
-                  //         //   int counts = count;
-                  //         //
-                  //         //   validateAnsSpec(selectedFinal, itemIndex);
-                  //         //
-                  //         // }
-                  //         // else{
-                  //         //   validateAnsSpec(selectedFinal, itemIndex); // here must pass the selected page number so have to create a seperate function for this.
-                  //         // }
-                  //
-                  //       },
-                  //     );
-                  //   },
-                  // ),
-                  child: ListView(
-                    // This next line does the trick.
-                    // controller: pageController,
-                    scrollDirection: Axis.horizontal,
-                    children: List.generate(widget.mapped.length,(itemIndex){
-                      return GestureDetector(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                              child: pgNo == itemIndex ? Icon(
-
-                        Icons.mode_edit,
-                        color: Colors.redAccent,
-                        size: size.height*0.04,
-                        ):
-                              widget.mapped[itemIndex] == null ? Container() :
-                              Icon(
-
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: size.height*0.04,
-                              ),
-                            ),
-                            Container(
-
-                                width: 60.0,
-                                height: size.height*0.05,
-                                child: Center(child: Text((itemIndex+1).toString()))
-                            ),
-
-                          ],
-                        ),
-                        onTap: (){
-                          print(Text((itemIndex+1).toString()));
-
-
-
-                            validateAnsSpec(selectedFinal, itemIndex);
-
-
-                          // validateAns(selectedFinal);
-                        },
-                      );
-                    }),
+                      color: Colors.transparent,
+                    ),
+                    height: size.height*0.2,
+                    width: size.width*0.1,
                   ),
-                ),
-
-
-                GestureDetector(
-
-                  onTap: (){
-
-                    validateAns(selectedFinal);
-
-                    // print(qAndAList.length);
-                    // Navigator.push(context, MaterialPageRoute(
-                    //     builder: (context) =>
-                    //         AnsBody(
-                    //           quesList: mcqQuestions,
-                    //           pageNo: pageNo + 1,
-                    //           correct: correct,
-                    //           tot: total,
-                    //           ansList: qAndAList,
-                    //           mcqId: mcqPprId,
-                    //           subId : widget.subId,
-                    //           time : 300,
-                    //           iniTime: strtEndT,
-                    //           setEnd : widget.mcqTime,
-                    //
-                    //         )
-                    // ));
-                    // pageController.animateToPage(
-                    //   current_index +1 ,
-                    //   duration: const Duration(milliseconds: 400),
-                    //   curve: Curves.easeInOut,
-                    // );
-
-                    setState(() {
-                      // pgNo = current_index + 1;
-                    });
-                    /* Navigator.push(context, MaterialPageRoute(
-                        builder: (context) =>
-                            AnsBody(
-                              quesList: widget.quesList,
-                              pageNo: current_index + 1,
-                              correct: corPrev,
-                              ansList: finQAndAList,
-                              mcqId: widget.mcqId,
-                              subId: widget.subId,
-                              time : restTime,
-                              iniTime: widget.iniTime,
-                              setEnd : widget.setEnd,
-
-                            )
-                    ));*/
-                  },
-
-                  child: Container(
-
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.only(
-                              bottomRight:  Radius.circular(10),
-                              topRight:  Radius.circular(10)
-                          )
-                      ),
-                      padding: EdgeInsets.all(12.0),
-                      child: Icon(Icons.keyboard_arrow_right,color: Colors.white,)),
-                ),
-
+                ): Container(width: 0, height: 0),
               ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Container(
-              color: Colors.indigo[100],
-              child: Row(
+
+
+            Expanded(
+              child: Container(
+                child: ListView(
+                  children: <Widget>[
+
+                    ListTile(
+                      title:
+                        Text(widget.quesList[widget.pageNo]['ans_one']),
+
+                      leading: Radio(
+                        value: 1,
+                        groupValue: groupVal,
+                        onChanged: (int value) {
+                          setState(() {
+                            groupVal = value;
+                            selectedFinal = widget.quesList[widget.pageNo]['ans_one_no'];
+                          });
+
+                        },
+                      ),
+                        subtitle: widget.quesList[widget.pageNo]['ans_one_img'] != null ? ((!(widget.quesList[widget.pageNo]['ans_one_img']).isEmpty) ?
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(widget.quesList[widget.pageNo]['ans_one_img']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.transparent,
+                              ),
+                              height: size.height*0.09,
+                              width: size.width*0.1,
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                return DetailScreen(
+                                  img: widget.quesList[widget.pageNo]['ans_one_img'],
+                                );
+                              }));
+                            },
+                          ),
+                        ): Container(width: 0, height: 0)): Container(width: 0, height: 0),
+                    ),
+
+                    ListTile(
+                        title: Text(widget.quesList[widget.pageNo]['ans_two']),
+
+                        leading: Radio(
+                          value: 2,
+                          groupValue: groupVal,
+                          onChanged: (int value) {
+                            setState(() {
+                              groupVal = value;
+                              selectedFinal = widget.quesList[widget.pageNo]['ans_two_no'];
+                            });
+
+                          },
+                        ),
+                        subtitle: widget.quesList[widget.pageNo]['ans_two_img'] != null ? ((!(widget.quesList[widget.pageNo]['ans_two_img']).isEmpty) ?
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(widget.quesList[widget.pageNo]['ans_two_img']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.transparent,
+                              ),
+                              height: size.height*0.09,
+                              width: size.width*0.1,
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                return DetailScreen(
+                                  img: widget.quesList[widget.pageNo]['ans_two_img'],
+                                );
+                              }));
+                            },
+                          ),
+                        ): Container(width: 0, height: 0)): Container(width: 0, height: 0),
+                    ),
+
+                    ListTile(
+                        title:
+                        Text(widget.quesList[widget.pageNo]['ans_three']),
+
+                        leading: Radio(
+                          value: 3,
+                          groupValue: groupVal,
+                          onChanged:(int value) {
+                            setState(() {
+                              groupVal = value;
+                              selectedFinal = widget.quesList[widget.pageNo]['ans_three_no'];
+                            });
+
+                          },
+                        ),
+                        subtitle: widget.quesList[widget.pageNo]['ans_three_img'] != null ? ((!(widget.quesList[widget.pageNo]['ans_three_img']).isEmpty) ?
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(widget.quesList[widget.pageNo]['ans_three_img']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.transparent,
+                              ),
+                              height: size.height*0.09,
+                              width: size.width*0.1,
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                return DetailScreen(
+                                  img: widget.quesList[widget.pageNo]['ans_three_img'],
+                                );
+                              }));
+                            },
+                          ),
+                        ): Container(width: 0, height: 0)): Container(width: 0, height: 0),
+                    ),
+
+                    ListTile(
+                        title:
+                        Text(widget.quesList[widget.pageNo]['ans_four']),
+
+                        leading: Radio(
+                          value: 4,
+                          groupValue: groupVal,
+                          onChanged: (int value) {
+                            setState(() {
+                              groupVal = value;
+                              selectedFinal = widget.quesList[widget.pageNo]['ans_four_no'];
+                            });
+
+                          },
+                        ),
+                        subtitle: widget.quesList[widget.pageNo]['ans_four_img'] != null ? ((!(widget.quesList[widget.pageNo]['ans_four_img']).isEmpty) ?
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(widget.quesList[widget.pageNo]['ans_four_img']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.transparent,
+                              ),
+                              height: size.height*0.09,
+                              width: size.width*0.1,
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                return DetailScreen(
+                                  img: widget.quesList[widget.pageNo]['ans_four_img'],
+                                );
+                              }));
+                            },
+                          ),
+                        ): Container(width: 0, height: 0)): Container(width: 0, height: 0),
+                    ),
+
+                    (!(widget.quesList[widget.pageNo]['ans_five']).isEmpty) ? ListTile(
+                        title: Text(widget.quesList[widget.pageNo]['ans_five']),
+
+                        leading: Radio(
+                          value: 5,
+                          groupValue: groupVal,
+                          onChanged: (int value) {
+                            setState(() {
+                              groupVal = value;
+                              selectedFinal = widget.quesList[widget.pageNo]['ans_five_no'];
+                            });
+
+                          },
+                        ),
+                        subtitle: widget.quesList[widget.pageNo]['ans_five_img'] != null ? ((!(widget.quesList[widget.pageNo]['ans_five_img']).isEmpty) ?
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            child: Container(
+                              decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(widget.quesList[widget.pageNo]['ans_five_img']),
+                                  fit: BoxFit.cover,
+                                ),
+                                color: Colors.transparent,
+                              ),
+                              height: size.height*0.09,
+                              width: size.width*0.1,
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_) {
+                                return DetailScreen(
+                                  img: widget.quesList[widget.pageNo]['ans_five_img'],
+                                );
+                              }));
+                            },
+                          ),
+                        ): Container(width: 0, height: 0)): Container(width: 0, height: 0),
+                    ): SizedBox(height: 1.0,),
+
+                    // CheckboxListTile(
+                    //
+                    //     title: Text(widget.quesList[widget.pageNo]['ans_one']),
+                    //     value: ansOneB,
+                    //     onChanged: (val) {
+                    //       setState(() {
+                    //         // _onSubSelected(val,list['id']);
+                    //         // print(mcqQuestions[0]['no']);
+                    //         // print(mcqQuestions[0]['answer']);
+                    //         // print(mcqQuestions[0]['ans_one_no']);
+                    //         // qNo = mcqQuestions[0]['no'];
+                    //         // ansNo = mcqQuestions[0]['answer'];
+                    //         // selectedNoOne = mcqQuestions[0]['ans_one_no'];
+                    //         ansOneB = true;
+                    //         ansFiveB = false;
+                    //         ansTwoB = false;
+                    //         ansThreeB = false;
+                    //         ansFourB = false;
+                    //         selectedFinal = widget.quesList[widget.pageNo]['ans_one_no'];
+                    //         // qNumber = int.parse(qNo);
+                    //         // assert(qNumber is int);
+                    //       });
+                    //       // print(selectedSubList);
+                    //     },
+                    //     subtitle: widget.quesList[widget.pageNo]['ans_one_img'] != null ? Padding(
+                    //       padding: const EdgeInsets.all(8.0),
+                    //       child: GestureDetector(
+                    //         child: Container(
+                    //           decoration: new BoxDecoration(
+                    //             image: DecorationImage(
+                    //               image: NetworkImage("http://rankme.ml/dashboard/assets/img/full-screen-image-4.jpg"+widget.quesList[widget.pageNo]['ans_one_img']),
+
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //             color: Colors.transparent,
+                    //           ),
+                    //           height: size.height*0.09,
+                    //           width: size.width*0.1,
+                    //         ),
+                    //         onTap: (){
+                    //           Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    //             return DetailScreen(
+                    //               img: widget.quesList[widget.pageNo]['ans_one_img'],
+                    //             );
+                    //           }));
+                    //         },
+                    //       ),
+                    //     ): Container(width: 0, height: 0)
+                    // ),
+                    // Divider(
+                    //   thickness: 1,
+                    //   color: Colors.grey,
+                    // ),
+                    // CheckboxListTile(
+                    //     title: Text(widget.quesList[widget.pageNo]['ans_two']),
+                    //     value: ansTwoB,
+                    //     onChanged: (val) {
+                    //       setState(() {
+                    //         // _onSubSelected(val,list['id']);
+                    //         // print(mcqQuestions[0]['no']);
+                    //         // print(mcqQuestions[0]['answer']);
+                    //         // print(mcqQuestions[0]['ans_two_no']);
+                    //         // qNo = mcqQuestions[0]['no'];
+                    //         // ansNo = mcqQuestions[0]['answer'];
+                    //         // selectedNoTwo = mcqQuestions[0]['ans_two_no'];
+                    //         ansTwoB = true;
+                    //         ansFiveB = false;
+                    //         ansOneB = false;
+                    //         ansThreeB = false;
+                    //         ansFourB = false;
+                    //         selectedFinal = widget.quesList[widget.pageNo]['ans_two_no'];
+                    //         // qNumber = int.parse(qNo);
+                    //         // assert(qNumber is int);
+                    //       });
+                    //       // print(selectedSubList);
+                    //
+                    //     },
+                    //     subtitle: widget.quesList[widget.pageNo]['ans_two_img'] != null ? Padding(
+                    //       padding: const EdgeInsets.all(8.0),
+                    //       child: GestureDetector(
+                    //         child: Container(
+                    //           decoration: new BoxDecoration(
+                    //             image: DecorationImage(
+                    //               image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_two_img']),
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //             color: Colors.transparent,
+                    //           ),
+                    //           height: size.height*0.09,
+                    //           width: size.width*0.1,
+                    //         ),
+                    //         onTap: (){
+                    //           Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    //             return DetailScreen(
+                    //               img: widget.quesList[widget.pageNo]['ans_two_img'],
+                    //             );
+                    //           }));
+                    //         },
+                    //       ),
+                    //     ): Container(width: 0, height: 0)
+                    // ),
+                    // Divider(
+                    //   thickness: 1,
+                    //   color: Colors.grey,
+                    // ),
+                    // CheckboxListTile(
+                    //     title: Text(widget.quesList[widget.pageNo]['ans_three']),
+                    //     value: ansThreeB,
+                    //     onChanged: (val) {
+                    //       setState(() {
+                    //         // _onSubSelected(val,list['id']);
+                    //         // print(mcqQuestions[0]['no']);
+                    //         // print(mcqQuestions[0]['answer']);
+                    //         // print(mcqQuestions[0]['ans_three_no']);
+                    //         // qNo = mcqQuestions[0]['no'];
+                    //         // ansNo = mcqQuestions[0]['answer'];
+                    //         // selectedNoThree = mcqQuestions[0]['ans_three_no'];
+                    //         ansThreeB = true;
+                    //         ansFiveB = false;
+                    //         ansOneB = false;
+                    //         ansTwoB = false;
+                    //         ansFourB = false;
+                    //         selectedFinal = widget.quesList[widget.pageNo]['ans_three_no'];
+                    //         // qNumber = int.parse(qNo);
+                    //         // assert(qNumber is int);
+                    //       });
+                    //       // print(selectedSubList);
+                    //     },
+                    //     subtitle: widget.quesList[widget.pageNo]['ans_three_img'] != null ? Padding(
+                    //       padding: const EdgeInsets.all(8.0),
+                    //       child: GestureDetector(
+                    //         child: Container(
+                    //           decoration: new BoxDecoration(
+                    //             image: DecorationImage(
+                    //               image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_three_img']),
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //             color: Colors.transparent,
+                    //           ),
+                    //           height: size.height*0.09,
+                    //           width: size.width*0.1,
+                    //         ),
+                    //         onTap: (){
+                    //           Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    //             return DetailScreen(
+                    //               img: widget.quesList[widget.pageNo]['ans_three_img'],
+                    //             );
+                    //           }));
+                    //         },
+                    //       ),
+                    //     ): Container(width: 0, height: 0)
+                    // ),
+                    // Divider(
+                    //   thickness: 1,
+                    //   color: Colors.grey,
+                    // ),
+                    // CheckboxListTile(
+                    //     title: Text(widget.quesList[widget.pageNo]['ans_four']),
+                    //     value: ansFourB,
+                    //     onChanged: (val) {
+                    //       setState(() {
+                    //         // _onSubSelected(val,list['id']);
+                    //         // print(mcqQuestions[0]['no']);
+                    //         // print(mcqQuestions[0]['answer']);
+                    //         // print(mcqQuestions[0]['ans_four_no']);
+                    //         // qNo = mcqQuestions[0]['no'];
+                    //         // ansNo = mcqQuestions[0]['answer'];
+                    //         // selectedNoFour = mcqQuestions[0]['ans_four_no'];
+                    //         ansFourB = true;
+                    //         ansFiveB = false;
+                    //         ansOneB = false;
+                    //         ansTwoB = false;
+                    //         ansThreeB = false;
+                    //         selectedFinal = widget.quesList[widget.pageNo]['ans_four_no'];
+                    //         // qNumber = int.parse(qNo);
+                    //         // assert(qNumber is int);
+                    //       });
+                    //       // print(selectedSubList);
+                    //     },
+                    //     subtitle: widget.quesList[widget.pageNo]['ans_four_img'] != null ? Padding(
+                    //       padding: const EdgeInsets.all(8.0),
+                    //       child: GestureDetector(
+                    //         child: Container(
+                    //           decoration: new BoxDecoration(
+                    //             image: DecorationImage(
+                    //               image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_four_img']),
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //             color: Colors.transparent,
+                    //           ),
+                    //           height: size.height*0.09,
+                    //           width: size.width*0.1,
+                    //         ),
+                    //         onTap: (){
+                    //           Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    //             return DetailScreen(
+                    //               img: widget.quesList[widget.pageNo]['ans_four_img'],
+                    //             );
+                    //           }));
+                    //         },
+                    //       ),
+                    //     ): Container(width: 0, height: 0)
+                    // ),
+                    // Divider(
+                    //   thickness: 1,
+                    //   color: Colors.grey,
+                    // ),
+                    // (!(widget.quesList[widget.pageNo]['ans_five']).isEmpty) ? CheckboxListTile(
+                    //     title: Text(widget.quesList[widget.pageNo]['ans_five']),
+                    //     value: ansFiveB,
+                    //     onChanged: (val) {
+                    //       setState(() {
+                    //         // _onSubSelected(val,list['id']);
+                    //         // print(mcqQuestions[0]['no']);
+                    //         // print(mcqQuestions[0]['answer']);
+                    //         // print(mcqQuestions[0]['ans_five_no']);
+                    //         // qNo = mcqQuestions[0]['no'];
+                    //         // ansNo = mcqQuestions[0]['answer'];
+                    //         // selectedNoFive = mcqQuestions[0]['ans_five_no'];
+                    //         ansFiveB = true;
+                    //         ansOneB = false;
+                    //         ansTwoB = false;
+                    //         ansThreeB = false;
+                    //         ansFourB = false;
+                    //         selectedFinal = widget.quesList[widget.pageNo]['ans_five_no'];
+                    //         // qNumber = int.parse(qNo);
+                    //         // assert(qNumber is int);
+                    //       });
+                    //       // print(selectedSubList);
+                    //     },
+                    //     subtitle: widget.quesList[widget.pageNo]['ans_five_img'] != null ? Padding(
+                    //       padding: const EdgeInsets.all(8.0),
+                    //       child: GestureDetector(
+                    //         child: Container(
+                    //           decoration: new BoxDecoration(
+                    //             image: DecorationImage(
+                    //               image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.quesList[widget.pageNo]['ans_five_img']),
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //             color: Colors.transparent,
+                    //           ),
+                    //           height: size.height*0.09,
+                    //           width: size.width*0.1,
+                    //         ),
+                    //         onTap: (){
+                    //           Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    //             return DetailScreen(
+                    //               img: widget.quesList[widget.pageNo]['ans_five_img'],
+                    //             );
+                    //           }));
+                    //         },
+                    //       ),
+                    //     ): Container(width: 0, height: 0)
+                    // ): SizedBox(
+                    //   height: 1.0,
+                    // ),
+
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: _buildPageIndicator(),
+                    // ),
+
+                  ],
+                ),
+              ),
+            ),
+            // Row(
+            //   crossAxisAlignment: CrossAxisAlignment.center,
+            //   children: [
+            //     Expanded(
+            //       child: widget.pageNo < widget.quesList.length ?  MaterialButton(
+            //         elevation: 2,
+            //         child: Text('Next'),
+            //         onPressed: (){
+            //
+            //           Navigator.push(context, MaterialPageRoute(
+            //               builder: (context) => AnsBody(
+            //                 quesList: widget.quesList,
+            //                 pageNo: widget.pageNo+1,
+            //
+            //               )
+            //           ));
+            //         },
+            //         color: Colors.indigoAccent,
+            //       ):
+            //       MaterialButton(
+            //         elevation: 2,
+            //         child: Text('Finish'),
+            //         onPressed: (){
+            //           print("End");
+            //
+            //           // Navigator.push(context, MaterialPageRoute(
+            //           //     builder: (context) => McqBody(
+            //           //
+            //           //     )
+            //           //));
+            //         },
+            //         color: Colors.indigoAccent,
+            //       ),
+            //     )
+            //   ],
+            // ),
+
+            // _buildCircleIndicator5()
+            Container(
+
+
+              //  margin: EdgeInsets.all(20.0),
+              height: size.height*0.11,
+              child:        Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(
-                    child: MaterialButton(
-                      elevation: 2,
-                      child: Text('Pause and Exit',
-                        style: TextStyle(
-                            color: Colors.white
-                        ),),
-                      onPressed: (){
-                        pauseExit();
-                      },
-                      color: Colors.redAccent,
+
+                  GestureDetector(
+                    onTap: (){
+                      // pageController.animateToPage(
+                      //   current_index -1 ,
+                      //   duration: const Duration(milliseconds: 400),
+                      //   curve: Curves.easeInOut,
+                      // );
+                      // Navigator.pop(context);
+                      int no = pgNo -1;
+                      validateAnsSpec(selectedFinal, no);
+                    },
+                    child: Container(
+
+                        decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.only(
+                                bottomLeft:  Radius.circular(10),
+                                topLeft:  Radius.circular(10)
+                            )
+                        ),
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.chevron_left,color: Colors.white)),
+                  ),
+                  Container(
+                    height: size.height*0.1,
+                    width: size.width*0.7,
+                    padding: EdgeInsets.all(2.0),
+                    // child: PageView.builder(
+                    //   itemCount: widget.quesList.length,
+                    //   controller: pageController,
+                    //   onPageChanged: _onPageViewChange,
+                    //   itemBuilder: (BuildContext context, int itemIndex,) {
+                    //     return GestureDetector(
+                    //       child: Container(
+                    //           width: 60.0,
+                    //           child: Text((itemIndex+1).toString())),
+                    //       onTap: (){
+                    //         // Navigator.push(context, MaterialPageRoute(
+                    //         //     builder: (context) => Review(
+                    //         //       showResList : widget.quesList,
+                    //         //       userSel: widget.ansList["$itemIndex"],
+                    //         //       qNo : itemIndex,
+                    //         //       ans : widget.ansList,
+                    //         //
+                    //         //     )
+                    //         // ));
+                    //
+                    //         // validateAns(selectedFinal);
+                    //         print(itemIndex);
+                    //         print(pgNo);
+                    //
+                    //         validateAnsSpec(selectedFinal, itemIndex);
+                    //
+                    //         // if(pgNo > itemIndex)
+                    //         // {
+                    //         //   int count =  pgNo- itemIndex;
+                    //         //   print("GO back" + count.toString() + "pages" );
+                    //         //
+                    //         //   int counts = count;
+                    //         //
+                    //         //   validateAnsSpec(selectedFinal, itemIndex);
+                    //         //
+                    //         // }
+                    //         // else{
+                    //         //   validateAnsSpec(selectedFinal, itemIndex); // here must pass the selected page number so have to create a seperate function for this.
+                    //         // }
+                    //
+                    //       },
+                    //     );
+                    //   },
+                    // ),
+                    child: ListView(
+                      // This next line does the trick.
+                      // controller: pageController,
+                      scrollDirection: Axis.horizontal,
+                      controller: _controller,
+                      children: List.generate(widget.mapped.length,(itemIndex){
+                        return GestureDetector(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: pgNo == itemIndex ? Icon(
+
+                          Icons.mode_edit,
+                          color: Colors.redAccent,
+                          size: size.height*0.04,
+                          ):
+                                widget.mapped[itemIndex] == null ? Container() :
+                                Icon(
+
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: size.height*0.04,
+                                ),
+                              ),
+                              Container(
+
+                                  width: size.width*0.14,
+                                  height: size.height*0.05,
+                                  child: Center(child: Text((itemIndex+1).toString()))
+                              ),
+
+                            ],
+                          ),
+                          onTap: (){
+                            print(Text((itemIndex+1).toString()));
+
+
+
+                              validateAnsSpec(selectedFinal, itemIndex);
+
+
+                            // validateAns(selectedFinal);
+                          },
+                        );
+                      }),
                     ),
                   ),
-                  SizedBox(
-                    width: size.width * 0.01,
+
+
+                  GestureDetector(
+
+                    onTap: (){
+
+                      validateAns(selectedFinal);
+
+                      // print(qAndAList.length);
+                      // Navigator.push(context, MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         AnsBody(
+                      //           quesList: mcqQuestions,
+                      //           pageNo: pageNo + 1,
+                      //           correct: correct,
+                      //           tot: total,
+                      //           ansList: qAndAList,
+                      //           mcqId: mcqPprId,
+                      //           subId : widget.subId,
+                      //           time : 300,
+                      //           iniTime: strtEndT,
+                      //           setEnd : widget.mcqTime,
+                      //
+                      //         )
+                      // ));
+                      // pageController.animateToPage(
+                      //   current_index +1 ,
+                      //   duration: const Duration(milliseconds: 400),
+                      //   curve: Curves.easeInOut,
+                      // );
+
+                      setState(() {
+                        // pgNo = current_index + 1;
+                      });
+                      /* Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                              AnsBody(
+                                quesList: widget.quesList,
+                                pageNo: current_index + 1,
+                                correct: corPrev,
+                                ansList: finQAndAList,
+                                mcqId: widget.mcqId,
+                                subId: widget.subId,
+                                time : restTime,
+                                iniTime: widget.iniTime,
+                                setEnd : widget.setEnd,
+
+                              )
+                      ));*/
+                    },
+
+                    child: Container(
+
+                        decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.only(
+                                bottomRight:  Radius.circular(10),
+                                topRight:  Radius.circular(10)
+                            )
+                        ),
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.keyboard_arrow_right,color: Colors.white,)),
                   ),
-                  Expanded(
 
-                    child:
-                    MaterialButton(
-                      elevation: 2,
-                      child: Text('Finish'),
-                      onPressed: (){
-                        validateAnsFinal(selectedFinal);
-                        // Navigator.push(context, MaterialPageRoute(
-
-                        //validateAnsFinal(selectedFinal);
-
-                        // builder: (context) => AnsBody(
-                        //   quesList: widget.quesList,
-                        //   pageNo: widget.pageNo+1,
-                        //
-                        // )
-                        // ));
-                      },
-                      color: Colors.indigoAccent,
-                    ),
-                  ),
-                  // SizedBox(
-                  //   width: size.width*0.01,
-                  // ),
-                  // Expanded(
-                  //
-                  //   child: widget.pageNo < widget.quesList.length-1 ?  MaterialButton(
-                  //     elevation: 2,
-                  //     child: Text('Next'),
-                  //     onPressed: (){
-                  //
-                  //       validateAns(selectedFinal);
-                  //
-                  //     },
-                  //     color: Colors.indigoAccent,
-                  //   ):
-                  //   MaterialButton(
-                  //     elevation: 2,
-                  //     child: Text('Next'),
-                  //     onPressed: null,
-                  //     color: Colors.indigoAccent,
-                  //   ),
-                  // )
                 ],
               ),
             ),
-          ),
-          // Column(
-          //   children: [
-          //
-          //     FloatingActionButton(
-          //       onPressed: (){
-          //         _settingModalBottomSheet(context);
-          //       },
-          //       child: new Icon(Icons.arrow_drop_up),
-          //     ),
-          //   ],
-          // ),
+            addPath != null ? (((addPath.isNotEmpty))?
+            Container(
+              decoration: new BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(addPath),
+                  fit: BoxFit.cover,
+                ),
+                color: Colors.transparent,
+              ),
+              height: size.height*0.09,
+              width: size.width*0.9,
+            ): SizedBox(
+              height: 0.1,
+            )): SizedBox(
+              height: 0.1,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Container(
+                color: Colors.indigo[100],
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: MaterialButton(
+                        elevation: 2,
+                        child: Text('Pause and Exit',
+                          style: TextStyle(
+                              color: Colors.white
+                          ),),
+                        onPressed: (){
+                          pauseExit();
+                        },
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                    SizedBox(
+                      width: size.width * 0.01,
+                    ),
+                    Expanded(
 
-          // Expanded(
-          //   child: ListView(
-          //     children: <Widget>[
-          //
-          //
-          //       _buildCircleIndicator5(),
-          //     ]
-          //         .map((item) => Padding(
-          //       child: item,
-          //       padding: EdgeInsets.all(1.0),
-          //     ))
-          //         .toList(),
-          //   ),
-          // ),
+                      child:
+                      MaterialButton(
+                        elevation: 2,
+                        child: Text('Finish'),
+                        onPressed: (){
+                          validateAnsFinal(selectedFinal);
+                          // Navigator.push(context, MaterialPageRoute(
 
-        ],
+                          //validateAnsFinal(selectedFinal);
+
+                          // builder: (context) => AnsBody(
+                          //   quesList: widget.quesList,
+                          //   pageNo: widget.pageNo+1,
+                          //
+                          // )
+                          // ));
+                        },
+                        color: Colors.indigoAccent,
+                      ),
+                    ),
+                    // SizedBox(
+                    //   width: size.width*0.01,
+                    // ),
+                    // Expanded(
+                    //
+                    //   child: widget.pageNo < widget.quesList.length-1 ?  MaterialButton(
+                    //     elevation: 2,
+                    //     child: Text('Next'),
+                    //     onPressed: (){
+                    //
+                    //       validateAns(selectedFinal);
+                    //
+                    //     },
+                    //     color: Colors.indigoAccent,
+                    //   ):
+                    //   MaterialButton(
+                    //     elevation: 2,
+                    //     child: Text('Next'),
+                    //     onPressed: null,
+                    //     color: Colors.indigoAccent,
+                    //   ),
+                    // )
+                  ],
+                ),
+              ),
+            ),
+            // Column(
+            //   children: [
+            //
+            //     FloatingActionButton(
+            //       onPressed: (){
+            //         _settingModalBottomSheet(context);
+            //       },
+            //       child: new Icon(Icons.arrow_drop_up),
+            //     ),
+            //   ],
+            // ),
+
+            // Expanded(
+            //   child: ListView(
+            //     children: <Widget>[
+            //
+            //
+            //       _buildCircleIndicator5(),
+            //     ]
+            //         .map((item) => Padding(
+            //       child: item,
+            //       padding: EdgeInsets.all(1.0),
+            //     ))
+            //         .toList(),
+            //   ),
+            // ),
+
+          ],
+        ),
+
       ),
-
     );
   }
   void _settingModalBottomSheet(context){
@@ -1410,7 +1684,7 @@ class DetailScreen extends StatelessWidget {
             tag: 'imageHero',
             child: Image.network(
 
-              "http://rankme.ml/dashbord/dist/"+img,
+              img,
             ),
           ),
         ),

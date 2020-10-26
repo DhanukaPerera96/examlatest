@@ -161,7 +161,7 @@ class _ShowResState extends State<ShowRes> {
                       ): Container(width: 0, height: 0),
                     ),
                   ),
-                  widget.showResList[widget.qNo]['ans_five'] != null ?
+                  (!(widget.showResList[widget.qNo]['ans_five']).isEmpty) ?
                   Card(
                     color: 5 == int.parse(widget.showResList[widget.qNo]['answer']) ? Colors.greenAccent : widget.userSel == 5 ? Colors.redAccent : Colors.transparent,
                     child: ListTile(

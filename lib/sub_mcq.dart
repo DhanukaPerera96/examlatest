@@ -291,6 +291,33 @@ class _SubMcqState extends State<SubMcq> {
 //                        },
 //                      ),
 //                    );
+                        print("Here");
+                        print(pmcqQuestions);
+                        print(pPage);
+                        print(pCor);
+                        print(finalsPause);
+                        print(pppr);
+                        print(pSub);
+                        print(pSub);
+                        print(pTime);
+                        print(transTime);
+                        print(psetEnd.toString());
+                        List map = List();
+                        List insMap = List();
+                        finalsPause.values.forEach((v) => insMap.add(v));
+                        for(var i = 0; i < pmcqQuestions.length; i++){
+                          map.add("0");
+
+                        }
+                        for(var x = 0; x < finalsPause.length; x++){
+                          // map[finalsPause.keys] = map[]
+                        }
+                        finalsPause.values.forEach((v) => map.add(v));
+                        //
+                        print(map);
+
+
+
 
 
                         Navigator.push(context, MaterialPageRoute(
@@ -305,6 +332,7 @@ class _SubMcqState extends State<SubMcq> {
                                   time : pTime,
                                   iniTime: transTime,
                                   setEnd : psetEnd.toString(),
+                                  mapped: map,
 
                                 )
                         ));

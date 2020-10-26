@@ -87,14 +87,14 @@ class _NoticeBodyState extends State<NoticeBody> {
                               width: size.width * 0.30,
                             ),
                             Expanded(
-                              child: Container(
+                              child: widget.image != null ? Container(
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.all(
                                         Radius.circular(24)
                                     ),
                                     image: DecorationImage(
 
-                                      image: NetworkImage("http://rankme.ml/dashbord/dist/"+widget.image),
+                                      image: NetworkImage(widget.image),
                                       fit: BoxFit.fill,
 
                                     ),
@@ -109,6 +109,8 @@ class _NoticeBodyState extends State<NoticeBody> {
                                 height: size.height * 0.30,
                                 width: size.width*0.40,
 
+                              ): SizedBox(
+                                height: 1.0,
                               ),),
                           ],
                         ),
