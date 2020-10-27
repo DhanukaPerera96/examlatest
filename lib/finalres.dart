@@ -11,13 +11,14 @@ import 'dart:collection';
 
 class FinalRes extends StatefulWidget {
   final double tot;
-  final Map ansList;
+  // final Map ansList;
   final List<dynamic> realAns;
+  final List<dynamic> mapped;
   final String mcqId;
   final String subId, setEnd;
   final int time, iniTime;
 
-  FinalRes({List<dynamic> realAns, this.tot, this.ansList, this.mcqId, this.subId, this.time, this.iniTime, this.setEnd}): this.realAns = realAns ?? [];
+  FinalRes({List<dynamic> realAns, List<dynamic> mapped, this.tot, this.mcqId, this.subId, this.time, this.iniTime, this.setEnd}): this.realAns = realAns, this.mapped = mapped ?? [];
 
   @override
   _FinalResState createState() => _FinalResState();
@@ -28,6 +29,7 @@ class _FinalResState extends State<FinalRes> {
   List userData = List();
   String dId;
   String udId;
+  double totalMarks = 0;
 
   @override
   void initState() {
@@ -39,10 +41,36 @@ class _FinalResState extends State<FinalRes> {
       val = 0;
     }
     result = val.toStringAsFixed(2);
-    // print(widget.ansList);
+    print(widget.mapped);
     // print("////////////////////////////////////////////////");
     // print(widget.realAns);
     getUserData();
+    getTotal();
+
+
+  }
+  getTotal(){
+    print("Get tot called");
+    int totQ = 0;
+    int x=0;
+    for(var i = 0; i < widget.realAns.length; i++){
+      setState(() {
+        totQ ++;
+      });
+
+      if(widget.realAns[i]['answer'] == widget.mapped[i]){
+        setState(() {
+          x = x+1;
+          print(x);
+        });
+
+      }
+      setState(() {
+        totalMarks = (x/totQ) * 100;
+      });
+
+
+    }
   }
 
 
@@ -100,7 +128,7 @@ class _FinalResState extends State<FinalRes> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Center(child: Text(result.toString())),
+                      child: Center(child: Text(totalMarks.toString())),
                     ),
                   ),
                   Expanded(
@@ -142,7 +170,7 @@ class _FinalResState extends State<FinalRes> {
 
 
                                 String time = _printDuration(init - now);
-                                String score = widget.tot.toString();
+                                String score = totalMarks.toString();
                                 String paper = widget.mcqId;
                                 String user = udId;
                                 String district = dId;
@@ -216,7 +244,7 @@ class _FinalResState extends State<FinalRes> {
                     return GestureDetector(
                       child: new GridTile(
                         child: new Card(
-                            color: widget.ansList["$index"] == int.parse(widget.realAns[index]['answer'])? Colors.green : Colors.red,
+                            color: widget.mapped[index] == widget.realAns[index]['answer']? Colors.green : Colors.red,
                             child: new Center(
                               child: new Text((index+1).toString()),
                             )
@@ -227,7 +255,7 @@ class _FinalResState extends State<FinalRes> {
                         Navigator.push(context, MaterialPageRoute(
                             builder: (context) => ShowRes(
                               showResList : widget.realAns,
-                              userSel: widget.ansList["$index"],
+                              userSel: int.parse(widget.mapped[index]),
                               qNo : index,
 
                             )

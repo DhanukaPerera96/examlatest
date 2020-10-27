@@ -302,17 +302,11 @@ class _SubMcqState extends State<SubMcq> {
                         print(pTime);
                         print(transTime);
                         print(psetEnd.toString());
-                        List map = List();
-                        List insMap = List();
-                        finalsPause.values.forEach((v) => insMap.add(v));
-                        for(var i = 0; i < pmcqQuestions.length; i++){
-                          map.add("0");
+                        List <String>map = List();
 
-                        }
-                        for(var x = 0; x < finalsPause.length; x++){
-                          // map[finalsPause.keys] = map[]
-                        }
-                        finalsPause.values.forEach((v) => map.add(v));
+
+
+                        finalsPause.values.forEach((v) => map.add(v.toString()));
                         //
                         print(map);
 

@@ -121,10 +121,10 @@ class _AnsBodyState extends State<AnsBody> {
     print(widget.time);
     getUserData();
     // print(map[pgNo]);
-    if(map[pgNo] != null){
+    if(map[pgNo] != 0){
       setState(() {
         _currentPageNotifier.value = 0;
-
+        print((map[pgNo]).runtimeType);
         var myInt = int.parse(map[pgNo]);
         assert(myInt is int);
         groupVal = myInt;
@@ -242,10 +242,11 @@ class _AnsBodyState extends State<AnsBody> {
     // list = finQAns.entries.map((e) => Ans(e.key, e.value)).toList();
     // var result = Map.fromIterable(list, key: (e) => e.ind, value: (e) => e.val);
     list = finQAns.values.toList();
-
+    print(list);
     String tots = tot.toStringAsFixed(2);
     String pg = page.toString();
-    String li = jsonEncode(list);
+    print(widget.mapped);
+    String li = jsonEncode(widget.mapped);
     String timeL = timeLeft.toString();
 
     print(uId);
@@ -382,6 +383,9 @@ class _AnsBodyState extends State<AnsBody> {
     else if(ans == null) {
 
       // widget.mapped[widget.pageNo] = 0;
+      setState(() {
+        finQAndAList["$pgNo"] = 0;
+      });
 
 
       Navigator.push(context, MaterialPageRoute(
@@ -469,7 +473,10 @@ class _AnsBodyState extends State<AnsBody> {
     else if(ans == null) {
 
       // widget.mapped[widget.pageNo] = 0;
-
+    setState(() {
+        finQAndAList["$pgNo"] = 0;
+      });
+      
 
      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
           builder: (context) =>
@@ -528,6 +535,8 @@ class _AnsBodyState extends State<AnsBody> {
             var restTime =  (endTime - transTime)+3000;
 
             if(ans != null){
+              widget.mapped[pgNo] = ans;
+
               int corAns = int.parse(widget.quesList[widget.pageNo]['answer']);
               quesAmt = widget.quesList.length;
               assert(corAns is int);
@@ -552,7 +561,7 @@ class _AnsBodyState extends State<AnsBody> {
               Navigator.push(context, MaterialPageRoute(
                   builder: (context) => FinalRes(
                     tot : total,
-                    ansList: finQAndAList,
+                    mapped: widget.mapped,
                     realAns: widget.quesList,
                     mcqId: widget.mcqId,
                     subId: widget.subId,
@@ -563,11 +572,15 @@ class _AnsBodyState extends State<AnsBody> {
               ));
             }
             else if(ans == null) {
+              setState(() {
+                finQAndAList["$pgNo"] = 0;
+              });
+      
               Navigator.push(context, MaterialPageRoute(
                   builder: (context) =>
                       FinalRes(
                         tot: total,
-                        ansList: finQAndAList,
+                        mapped: widget.mapped,
                         realAns: widget.quesList,
                         mcqId: widget.mcqId,
                         subId: widget.subId,
@@ -601,6 +614,7 @@ class _AnsBodyState extends State<AnsBody> {
     var restTime =  (endTime - transTime)+3000;
 
     if(ans != null){
+      widget.mapped[pgNo] = ans;
       int corAns = int.parse(widget.quesList[widget.pageNo]['answer']);
       quesAmt = widget.quesList.length;
       assert(corAns is int);
@@ -625,7 +639,7 @@ class _AnsBodyState extends State<AnsBody> {
       Navigator.push(context, MaterialPageRoute(
           builder: (context) => FinalRes(
             tot : total,
-            ansList: finQAndAList,
+            mapped: widget.mapped,
             realAns: widget.quesList,
             mcqId: widget.mcqId,
             subId: widget.subId,
@@ -636,11 +650,16 @@ class _AnsBodyState extends State<AnsBody> {
       ));
     }
     else if(ans == null) {
+      setState(() {
+        finQAndAList["$pgNo"] = 0;
+      });
+      
+
       Navigator.push(context, MaterialPageRoute(
           builder: (context) =>
               FinalRes(
                 tot: total,
-                ansList: finQAndAList,
+                mapped: widget.mapped,
                 realAns: widget.quesList,
                 mcqId: widget.mcqId,
                 subId: widget.subId,
@@ -1426,7 +1445,7 @@ class _AnsBodyState extends State<AnsBody> {
                           color: Colors.redAccent,
                           size: size.height*0.04,
                           ):
-                                widget.mapped[itemIndex] == null ? Container() :
+                                widget.mapped[itemIndex] == "0" ? Container() :
                                 Icon(
 
                                   Icons.check_circle,

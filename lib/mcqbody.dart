@@ -52,7 +52,7 @@ class _McqBodyState extends State<McqBody> {
   List mcqQueAns = List();
   List userData = List();
   List addsData = List();
-  List mapList;
+  List mapList = List();
 
   final Map<String, int> qAndAList = {};
   List list = List();
@@ -198,8 +198,11 @@ class _McqBodyState extends State<McqBody> {
 //          print(mcqDetails);
           mcqQuesId = mcqQuestions[0]['id'];
           correctAns = mcqQuestions[0]['answer'];
-          mapList = List(mcqQuestions.length);
-          print(mapList.length.toString());
+          for(var i = 0; i < mcqQuestions.length; i++){
+            mapList.add("0");
+
+          }
+          print(mapList.toString());
         });
       }
 
@@ -399,6 +402,10 @@ class _McqBodyState extends State<McqBody> {
     }
     else if(ans == null) {
 
+      setState(() {
+         qAndAList["$pageNo"] = 0;
+      });
+
       // mapList[0] = 0;
 
       Navigator.pushReplacement(context, MaterialPageRoute(
@@ -491,6 +498,11 @@ class _McqBodyState extends State<McqBody> {
     }
     else if(ans == null) {
 
+      setState(() {
+         qAndAList["$pageNo"] = 0;
+      });
+
+
       // mapList[0] = 0;
 
       Navigator.pushReplacement(context, MaterialPageRoute(
@@ -574,7 +586,7 @@ class _McqBodyState extends State<McqBody> {
               Navigator.push(context, MaterialPageRoute(
                   builder: (context) => FinalRes(
                     tot : total,
-                    ansList: qAndAList,
+                    mapped: mapList,
                     realAns : mcqQuestions,
                     mcqId: mcqPprId,
                     subId : widget.subId,
@@ -587,10 +599,15 @@ class _McqBodyState extends State<McqBody> {
             }
             else if(ans == null)
             {
+
+              setState(() {
+         qAndAList["$pageNo"] = 0;
+      });
+
               Navigator.push(context, MaterialPageRoute(
                   builder: (context) => FinalRes(
                     tot : total,
-                    ansList: qAndAList,
+                    mapped: mapList,
                     realAns : mcqQuestions,
                     mcqId: mcqPprId,
                     subId : widget.subId,
@@ -646,7 +663,7 @@ class _McqBodyState extends State<McqBody> {
       Navigator.push(context, MaterialPageRoute(
           builder: (context) => FinalRes(
             tot : total,
-            ansList: qAndAList,
+            mapped: mapList,
             realAns : mcqQuestions,
             mcqId: mcqPprId,
             subId : widget.subId,
@@ -659,10 +676,14 @@ class _McqBodyState extends State<McqBody> {
     }
     else if(ans == null)
     {
+      setState(() {
+         qAndAList["$pageNo"] = 0;
+      });
+
       Navigator.push(context, MaterialPageRoute(
           builder: (context) => FinalRes(
             tot : total,
-            ansList: qAndAList,
+            mapped: mapList,
             realAns : mcqQuestions,
             mcqId: mcqPprId,
             subId : widget.subId,
@@ -1448,7 +1469,7 @@ class _McqBodyState extends State<McqBody> {
                                         children: [
                                           Expanded(
                                             child:
-                                            mapList[itemIndex] == null ? Container() : pageNo == itemIndex ? Icon(
+                                            mapList[itemIndex] == "0" ? Container() : pageNo == itemIndex ? Icon(
 
                                               Icons.mode_edit,
                                               color: Colors.redAccent,
